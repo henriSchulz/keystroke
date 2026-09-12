@@ -64,11 +64,11 @@
       "enabled": false,
       "greeting": "Hello"
     },
-    "codex": {
+    "claude": {
       "enabled": true,
-      "model": "gpt-5.6-luna",
-      "fast": true,
-      "destination": "desktop",
+      "model": "claude-opus-5",
+      "effort": "low",
+      "destination": "cli",
       "workspace": ""
     },
     "extensions": {

@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "id": "evindor.keystroke",
-  "name": "Keystroke",
+  "id": "henri.keystroke",
+  "name": "Keystroke (Claude)",
   "version": "1.4.2",
   "author": "Arseniy Zarechnev",
   "license": "MIT",
-  "description": "A Raycast-style command palette that replaces the Omarchy menu, with voice, Codex and community extensions",
+  "description": "A Raycast-style command palette that replaces the Omarchy menu, with voice, Claude Code and community extensions",
   "homepage": "https://github.com/evindor/keystroke",
+  "forkOf": "evindor.keystroke",
   "kinds": [
     "menu",
     "bar-widget"
@@ -17,7 +18,7 @@
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "Keystroke",
+    "displayName": "Keystroke (Claude)",
     "description": "Opens the Keystroke command palette",
     "category": "Compositor",
     "allowMultiple": false,

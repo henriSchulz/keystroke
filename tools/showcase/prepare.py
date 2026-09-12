@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # offscreen.py builds the same fixture in its own work folder.
 DEST = Path(os.environ.get('KEYSTROKE_SHOWCASE_DEST', '/tmp/keystroke-showcase-plugin'))
 DEST.mkdir(exist_ok=True)
-for folder in ('core', 'ui', 'voice', 'codex'):
+for folder in ('core', 'ui', 'voice', 'claude'):
     shutil.copytree(ROOT / folder, DEST / folder, dirs_exist_ok=True)
 (DEST / 'providers').mkdir(exist_ok=True)
 for name in ('Calculator', 'Colors'):
@@ -79,7 +79,7 @@ Item {
 }
 ''')
 s = (ROOT / 'Keystroke.qml').read_text()
-s = s.replace('import "core/Match.js" as Match', 'import "codex"\nimport "core/Units.js" as Units\nimport "core/Match.js" as Match')
+s = s.replace('import "core/Match.js" as Match', 'import "claude"\nimport "core/Units.js" as Units\nimport "core/Match.js" as Match')
 s = s.replace('Quickshell.env("HOME")', json.dumps(os.environ.get('KEYSTROKE_SHOWCASE_HOME', '/tmp/keystroke-showcase-empty-home')))
 s = s.replace('  function runQuery() {', '  function runQuery() { return;')
 s = s.replace('  function activate(alternate) {', '  function activate(alternate) { return;')
@@ -142,7 +142,7 @@ s = s.replace('  function open(payloadJson) {', '''  Calculator { id: demoCalcul
     if (p.conversation) {
       demoSession.messages = p.conversation
       demoSession.draft = p.draft || ""
-      root.activeProviderKey = "codex"
+      root.activeProviderKey = "claude"
       providerView.sourceComponent = demoConversation
     }
   }

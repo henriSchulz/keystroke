@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101010">
   <title>Learn Keystroke — the usage guide</title>
-  <meta name="description" content="Every Keystroke feature on one page: launching, the Omarchy menu, hotkeys, calculator, conversions, files, clipboard, voice, Codex, settings, typed commands and extensions. Each with a screenshot and one thing to try.">
+  <meta name="description" content="Every Keystroke feature on one page: launching, the Omarchy menu, hotkeys, calculator, conversions, files, clipboard, voice, Claude, settings, typed commands and extensions. Each with a screenshot and one thing to try.">
   <link rel="canonical" href="https://evindor.github.io/keystroke/guide/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="Learn Keystroke — the usage guide">
@@ -14,7 +14,7 @@
   <meta property="og:image" content="https://evindor.github.io/keystroke/assets/social-card.png">
   <meta property="og:image:width" content="2400">
   <meta property="og:image:height" content="1260">
-  <meta property="og:image:alt" content="Keystroke: Raycast for Omarchy, with app launcher, calculator, voice and Codex screenshots">
+  <meta property="og:image:alt" content="Keystroke: Raycast for Omarchy, with app launcher, calculator, voice and Claude screenshots">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Learn Keystroke — the usage guide">
   <meta name="twitter:description" content="Every feature of the Keystroke palette on one page, with a screenshot and one thing to try.">
@@ -38,7 +38,7 @@
       <div><h2>Start here</h2><a href="#start">Open it</a><a href="#keys">Keys to know</a><a href="#launch">Launch apps</a><a href="#omarchy">The Omarchy menu</a><a href="#fuzzy">Fuzzy into submenus</a><a href="#hotkeys">Hotkeys</a></div>
       <div><h2>Answers as you type</h2><a href="#calculator">Calculator</a><a href="#converter">Units and temperatures</a><a href="#timezones">Time zones</a><a href="#colors">Colors</a><a href="#emoji">Emoji</a></div>
       <div><h2>Find things</h2><a href="#clipboard">Clipboard history</a><a href="#files">Files and folders</a><a href="#smart-match">Smart Match</a></div>
-      <div><h2>Speak and ask</h2><a href="#voice">Voice</a><a href="#dictation">Dictate to Clipboard</a><a href="#assistants">Assistants</a><a href="#codex">Codex inside Keystroke</a></div>
+      <div><h2>Speak and ask</h2><a href="#voice">Voice</a><a href="#dictation">Dictate to Clipboard</a><a href="#assistants">Assistants</a><a href="#claude">Claude inside Keystroke</a></div>
       <div><h2>Make it yours</h2><a href="#settings">Settings</a><a href="#appearance">Appearance</a><a href="#bar">The bar button</a></div>
       <div><h2>Commands and extensions</h2><a href="#commands">Commands explain themselves</a><a href="#help">What can I type?</a><a href="#extensions">Extensions</a><a href="#extension-page">An extension's page</a><a href="#timer">Timer</a><a href="#translate">Translate</a><a href="#build">Write your own</a></div>
     </nav>
@@ -242,20 +242,20 @@
     <div class="topic-copy">
       <span class="feature-number">17 / ASSISTANTS</span>
       <h3 id="assistants-title">Send a query to an assistant</h3>
-      <p>Whatever you typed or said, <em>Continue with</em> offers it to Codex, Claude, ChatGPT and Google, with the prompt already in the target's composer: the Claude or Codex desktop app, the browser (<code>claude.ai</code>, <code>chatgpt.com</code>), or a terminal running the CLI. Nothing goes through the clipboard. Settings → AI &amp; Web Search picks the preferred assistant, the destination, and whether the browser sends immediately.</p>
+      <p>Whatever you typed or said, <em>Continue with</em> offers it to Claude, ChatGPT and Google, with the prompt already in the target's composer: the Claude desktop app, the browser (<code>claude.ai</code>, <code>chatgpt.com</code>), or a terminal running the CLI. Nothing goes through the clipboard. Settings → AI &amp; Web Search picks the preferred assistant, the destination, and whether the browser sends immediately.</p>
       <p class="try"><b>Try it</b> Type a question, press <kbd>↓</kbd> to <strong>Ask Claude</strong>, press <kbd>↵</kbd>.</p>
     </div>
-    <button class="shot stage violet" data-image="ai" data-label="Continue with an assistant" aria-label="Enlarge the assistants screenshot"><img src="../assets/screenshots/ai.png" width="2560" height="2160" loading="lazy" alt="explain hyprland workspaces with Ask Codex here, Open task in Codex, Ask ChatGPT, Ask Claude and Search Google"><span class="zoom" aria-hidden="true">↗</span></button>
+    <button class="shot stage violet" data-image="ai" data-label="Continue with an assistant" aria-label="Enlarge the assistants screenshot"><img src="../assets/screenshots/ai.png" width="2560" height="2160" loading="lazy" alt="explain hyprland workspaces with Ask Claude here, Open task in Claude Code, Ask ChatGPT and Search Google"><span class="zoom" aria-hidden="true">↗</span></button>
   </section>
 
-  <section class="topic" id="codex" aria-labelledby="codex-title">
+  <section class="topic" id="claude" aria-labelledby="claude-title">
     <div class="topic-copy">
-      <span class="feature-number">18 / CODEX INSIDE KEYSTROKE</span>
-      <h3 id="codex-title">Ask Codex inside the palette</h3>
-      <p>Select <strong>Ask Codex here</strong>, or type <code>? </code> before a question, and the answer streams inside the palette. <kbd>↵</kbd> sends a follow-up, <kbd>Shift</kbd>+<kbd>↵</kbd> adds a line, your voice hotkey fills the composer, <strong>Stop</strong> interrupts, <kbd>Ctrl</kbd>+<kbd>↵</kbd> continues in the Codex app or CLI. <strong>Codex → Recent questions</strong> resumes a conversation. It uses your own <code>codex login</code> (Codex CLI 0.153.2) and one local app-server that shuts down after ten idle minutes. Settings → Codex picks the model, Fast or Standard, the destination and a working folder.</p>
+      <span class="feature-number">18 / CLAUDE INSIDE KEYSTROKE</span>
+      <h3 id="claude-title">Ask Claude inside the palette</h3>
+      <p>Select <strong>Ask Claude here</strong>, or type <code>? </code> before a question, and the answer streams inside the palette. <kbd>↵</kbd> sends a follow-up, <kbd>Shift</kbd>+<kbd>↵</kbd> adds a line, your voice hotkey fills the composer, <strong>Stop</strong> interrupts, <kbd>Ctrl</kbd>+<kbd>↵</kbd> continues the conversation in a terminal. <strong>Claude → Recent questions</strong> resumes a conversation. It uses your own Claude Code login (CLI 2.0.0 or newer) and one local <code>claude</code> process per conversation that shuts down after ten idle minutes. Settings → Claude picks the model, the effort level, where new tasks open and a working folder.</p>
       <p class="try"><b>Try it</b> Type <code>? how do I find the biggest folders here</code> and press <kbd>↵</kbd>.</p>
     </div>
-    <button class="shot stage violet" data-image="codex" data-label="Codex inside Keystroke" aria-label="Enlarge the Codex screenshot"><img src="../assets/screenshots/codex.png" width="2560" height="2160" loading="lazy" alt="A Codex conversation about finding large folders, with a follow-up being typed"><span class="zoom" aria-hidden="true">↗</span></button>
+    <button class="shot stage violet" data-image="claude" data-label="Claude inside Keystroke" aria-label="Enlarge the Claude screenshot"><img src="../assets/screenshots/claude.png" width="2560" height="2160" loading="lazy" alt="A Claude conversation about finding large folders, with a follow-up being typed"><span class="zoom" aria-hidden="true">↗</span></button>
   </section>
 
   <h2 class="group" id="group-yours">Make it yours</h2>
@@ -374,7 +374,7 @@
   </section>
 
   <section class="guide-end">
-    <p class="capture-note">Every screenshot is the real Keystroke interface rendered with sample data; the Applications list, the Codex conversation and the voice recording are staged states. Appearance follows your active Omarchy theme.</p>
+    <p class="capture-note">Every screenshot is the real Keystroke interface rendered with sample data; the Applications list, the Claude conversation and the voice recording are staged states. Appearance follows your active Omarchy theme.</p>
     <p class="guide-links"><a href="../#install">Install Keystroke ↗</a><a href="https://github.com/evindor/keystroke#readme">README ↗</a><a href="https://github.com/evindor/keystroke/blob/main/docs/releases/v1.4.0.md">Release notes ↗</a><a href="https://github.com/evindor/keystroke/issues">Feedback ↗</a></p>
   </section>
 

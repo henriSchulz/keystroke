@@ -1,4 +1,4 @@
-> Historical checkpoints below include retired local-model and forked-Voxtype implementations. Current build: [Codex integration verification](codex-integration-verification.md).
+> Historical checkpoints below include retired local-model and forked-Voxtype implementations. Current build: [Claude integration verification](claude-integration-verification.md). Entries below this line describe the upstream Codex integration this fork replaced and are kept as history.
 
 ## Dmenu empty-state height (2026-09-10)
 

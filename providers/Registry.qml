@@ -36,12 +36,12 @@ Item {
   Files { id: files; host: root.host }
   Hotkeys { id: hotkeys; host: root.host }
   AiWeb { id: aiWeb; host: root.host }
-  Codex { id: codex; host: root.host }
+  Claude { id: claudeProvider; host: root.host }
   Extensions { id: extensions; host: root.host }
   CommandsProvider { id: commandsProvider; host: root.host }
   SettingsProvider { id: settingsProvider; host: root.host }
 
-  readonly property var bundled: [omarchyMenu, applications, calculator, converter, colors, emoji, clipboard, dictation, files, hotkeys, codex, aiWeb, extensions, commandsProvider, settingsProvider]
+  readonly property var bundled: [omarchyMenu, applications, calculator, converter, colors, emoji, clipboard, dictation, files, hotkeys, claudeProvider, aiWeb, extensions, commandsProvider, settingsProvider]
   readonly property var reserved: bundled.map(function(b) { return b.provider.id }).concat(["palette", "dmenu", "matching", "voice"])
 
   // Declared patterns and commands are compiled here, once per rebuild, never

@@ -27,7 +27,7 @@ root = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix="keystroke-palette-commands-") as temp:
     work = Path(temp)
     project = work / "project"
-    shutil.copytree(root, project, ignore=shutil.ignore_patterns(".git", ".claude", ".agents", ".codex", "tests", "__pycache__", "experiments"))
+    shutil.copytree(root, project, ignore=shutil.ignore_patterns(".git", ".claude", ".agents", "tests", "__pycache__", "experiments"))
     (work / "qs").symlink_to("/usr/share/omarchy/shell")
     source = project / "Keystroke.qml"
     qml = source.read_text()

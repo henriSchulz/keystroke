@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101010">
   <title>Keystroke — Raycast-style power for Omarchy</title>
-  <meta name="description" content="A native, open-source upgrade to the Omarchy menu. Launch apps, search files, recall your clipboard, calculate, talk to Codex and extend your workflow. One shortcut.">
+  <meta name="description" content="A native, open-source upgrade to the Omarchy menu. Launch apps, search files, recall your clipboard, calculate, talk to Claude and extend your workflow. One shortcut.">
   <link rel="canonical" href="https://evindor.github.io/keystroke/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Keystroke — Your Omarchy. One keystroke away.">
-  <meta property="og:description" content="Raycast-style power, native to Omarchy. Apps, clipboard, Codex, voice and extensions in one command palette.">
+  <meta property="og:description" content="Raycast-style power, native to Omarchy. Apps, clipboard, Claude, voice and extensions in one command palette.">
   <meta property="og:url" content="https://evindor.github.io/keystroke/">
   <meta property="og:image" content="https://evindor.github.io/keystroke/assets/social-card.png">
   <meta property="og:image:width" content="2400">
   <meta property="og:image:height" content="1260">
-  <meta property="og:image:alt" content="Keystroke: Raycast for Omarchy, with app launcher, calculator, voice and Codex screenshots">
+  <meta property="og:image:alt" content="Keystroke: Raycast for Omarchy, with app launcher, calculator, voice and Claude screenshots">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Keystroke — Raycast-style power for Omarchy">
   <meta name="twitter:description" content="Your apps, answers and next idea. One keystroke away.">
@@ -35,10 +35,10 @@
     <h1 id="headline">Your Omarchy.<br><span>One keystroke away.</span></h1>
     <p class="hero-copy">Your apps, answers, and next idea.<br>A native command palette that gives your default menu superpowers.</p>
     <div class="hero-actions"><a class="button primary" href="#install">Make it your menu <span aria-hidden="true">↗</span></a><a class="text-link" href="guide/">Learn every feature <span aria-hidden="true">→</span></a></div>
-    <div class="hero-art" aria-label="Keystroke app launcher, calculator and Codex screenshots">
+    <div class="hero-art" aria-label="Keystroke app launcher, calculator and Claude screenshots">
       <div class="orb orb-one"></div><div class="orb orb-two"></div><div class="orbit"></div>
       <img class="hero-back hero-back-left" src="assets/screenshots/calculator.png" width="2560" height="2160" alt="Calculator: sqrt(144) + 15% of 80 = 24">
-      <img class="hero-back hero-back-right" src="assets/screenshots/codex.png" width="2560" height="2160" alt="A Codex answer and follow-up inside Keystroke">
+      <img class="hero-back hero-back-right" src="assets/screenshots/claude.png" width="2560" height="2160" alt="A Claude answer and follow-up inside Keystroke">
       <img class="hero-front" src="assets/screenshots/apps.png" width="2560" height="2160" alt="Keystroke’s native Applications menu">
       <div class="shortcut"><kbd>Super</kbd><span>+</span><kbd>Space</kbd><span class="shortcut-caption">meet your new menu</span></div>
     </div>
@@ -60,8 +60,8 @@
       <article class="feature"><div class="feature-copy"><span class="feature-number">03 / FIND</span><h3>That file. Right there.</h3><p>Find files and folders under your home directory. Open them, or jump straight to a terminal with Ctrl+Enter.</p></div><button class="shot stage sage" data-image="files" aria-label="Enlarge File search screenshot"><img src="assets/screenshots/files.png" width="2560" height="2160" loading="lazy" alt="Search for README files in sample project folders"><span class="zoom" aria-hidden="true">↗</span></button></article>
     </div>
     <article class="feature wide intelligence">
-      <div class="feature-copy"><span class="feature-number">04 / ASK</span><h3>A little question.<br>A full conversation.</h3><p>Ask Codex without leaving the palette. Read a streamed answer, ask a follow-up, or continue the conversation in the Codex app or CLI.</p><div class="query-example"><span>?</span> How do I find the biggest folders?</div><span class="feature-tag">Uses your Codex login</span></div>
-      <button class="shot stage violet" data-image="codex" aria-label="Enlarge Codex conversation screenshot"><img src="assets/screenshots/codex.png" width="2560" height="2160" loading="lazy" alt="An example Codex conversation about finding large folders"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="feature-copy"><span class="feature-number">04 / ASK</span><h3>A little question.<br>A full conversation.</h3><p>Ask Claude without leaving the palette. Read a streamed answer, ask a follow-up, or continue the conversation in the Claude app or CLI.</p><div class="query-example"><span>?</span> How do I find the biggest folders?</div><span class="feature-tag">Uses your Claude login</span></div>
+      <button class="shot stage violet" data-image="claude" aria-label="Enlarge Claude conversation screenshot"><img src="assets/screenshots/claude.png" width="2560" height="2160" loading="lazy" alt="An example Claude conversation about finding large folders"><span class="zoom" aria-hidden="true">↗</span></button>
     </article>
     <article class="feature wide voice-feature">
       <button class="shot stage rust" data-image="voice" aria-label="Enlarge Voice control screenshot"><img src="assets/screenshots/voice.png" width="2560" height="2160" loading="lazy" alt="Live voice waveform beside Open the display settings"><span class="zoom" aria-hidden="true">↗</span></button>
@@ -108,7 +108,7 @@
     <p class="after-install">Then press <kbd>Super</kbd> + <kbd>Space</kbd>. You’re in.</p>
     <div class="setup-grid">
       <details><summary>Enable voice control <span>+</span></summary><p>Install voxtype through <strong>Omarchy → Install → AI → Dictation</strong>, then open <strong>Keystroke Settings → Voice</strong> and enable the hold-to-talk bindings. A second tap of your shortcut can also start listening.</p><p>Keystroke uses your normal Voxtype service and settings without replacing or rewriting them. Current releases fill the query after transcription finishes; live partials will appear automatically when supported upstream.</p><a href="https://github.com/evindor/keystroke#voice">Full voice setup ↗</a></details>
-      <details><summary>Connect Codex <span>+</span></summary><p>Install the supported Codex CLI (<strong>0.153.2</strong>) and sign in with <code>codex login</code>. Type <code>? </code> before your question or select <strong>Ask Codex here</strong>.</p><p>The integration uses your Codex access and its usage limits. Choose the model, processing tier, and handoff destination in <strong>Settings → Codex</strong>.</p><a href="https://github.com/evindor/keystroke#codex-inside-keystroke">Compatibility and setup ↗</a></details>
+      <details><summary>Connect Claude <span>+</span></summary><p>Install the Claude Code CLI (<strong>2.0.0 or newer</strong>) and sign in with <code>claude</code>. Type <code>? </code> before your question or select <strong>Ask Claude here</strong>.</p><p>The integration uses your own Claude access and its usage limits. Choose the model, effort level, where new tasks open, and a working folder in <strong>Settings → Claude</strong>.</p><a href="https://github.com/evindor/keystroke#claude-inside-keystroke">Compatibility and setup ↗</a></details>
       <details><summary>Add your first extension <span>+</span></summary><p>Type <code>ext</code>, open <strong>Extensions</strong>, pick Timer or Translate and confirm <strong>Enabled</strong>. Extensions ship with Keystroke and stay off until you turn them on; the status line then tells you what to type.</p><p>Extensions run unsandboxed with your permissions once enabled, like Keystroke itself.</p><a href="https://github.com/evindor/keystroke/tree/main/extensions/timer">Explore the Timer template ↗</a></details>
       <details><summary>Restore the default menu <span>+</span></summary><p>To disable Keystroke and restore the stock Omarchy menu:</p><pre><code>omarchy plugin disable evindor.keystroke</code></pre><p>To remove it completely:</p><pre><code>omarchy plugin remove evindor.keystroke</code></pre></details>
     </div>

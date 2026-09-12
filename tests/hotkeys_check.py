@@ -23,7 +23,7 @@ if subprocess.run(["hyprctl", "binds"], capture_output=True, text=True).returnco
 with tempfile.TemporaryDirectory(prefix="keystroke-hotkeys-") as temp:
     work = Path(temp)
     project = work / "project"
-    shutil.copytree(root, project, ignore=shutil.ignore_patterns(".git", ".claude", ".agents", ".codex", "tests", "__pycache__", "experiments"))
+    shutil.copytree(root, project, ignore=shutil.ignore_patterns(".git", ".claude", ".agents", "tests", "__pycache__", "experiments"))
     for name, target in [("qs", "/usr/share/omarchy/shell"), ("Commons", "/usr/share/omarchy/shell/Commons"), ("Ui", "/usr/share/omarchy/shell/Ui")]:
         (work / name).symlink_to(target)
 

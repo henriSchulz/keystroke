@@ -4,11 +4,11 @@ import "../core/AiTargets.js" as Ai
 
 TestCase {
     name: "AiTargets"
-    property var all: ({ "claude-desktop": true, "chatgpt": true, "claude": true, "codex": true })
+    property var all: ({ "claude-desktop": true, "claude": true })
 
     function test_links_carry_the_prompt() {
         compare(Ai.claudeDesktopUrl("what is 2+2?"), "claude://claude.ai/new?q=what%20is%202%2B2%3F&surface=chat")
-        compare(Ai.codexDesktopUrl("fix the bug"), "codex://threads/new?prompt=fix%20the%20bug")
+        compare(Ai.claudeCodeUrl("fix the bug"), "claude://code/new?q=fix%20the%20bug")
         compare(Ai.claudeWebUrl("hi"), "https://claude.ai/new?q=hi")
         compare(Ai.chatgptWebUrl("hi", false), "https://chatgpt.com/?prompt=hi")
         compare(Ai.chatgptWebUrl("hi", true), "https://chatgpt.com/?q=hi")
@@ -18,17 +18,20 @@ TestCase {
         // Claude's URL validator refuses a q that starts with "/".
         compare(Ai.claudeDesktopUrl("/clear"), "claude://claude.ai/new?q=%20%2Fclear&surface=chat")
         var long = new Array(3000).join("a")
-        verify(decodeURIComponent(Ai.codexDesktopUrl(long).split("prompt=")[1]).length === Ai.MAX_PROMPT)
+        verify(decodeURIComponent(Ai.claudeCodeUrl(long).split("q=")[1]).length === Ai.MAX_PROMPT)
     }
-    function test_desktop_mode_uses_the_apps_own_launchers() {
+    function test_desktop_mode_uses_the_apps_own_launcher() {
         var c = Ai.plan("claude", "desktop", false, all, "hello")
         compare(c.target, "claude-desktop")
         compare(c.effect.type, "exec")
         compare(c.effect.argv[0], "claude-desktop")
         compare(c.effect.argv[1], "claude://claude.ai/new?q=hello&surface=chat")
+    }
+    function test_chatgpt_always_opens_in_the_browser() {
         var g = Ai.plan("chatgpt", "desktop", false, all, "hello")
-        compare(g.title, "Ask Codex")
-        compare(g.effect.argv, ["chatgpt", "codex://threads/new?prompt=hello"])
+        compare(g.target, "chatgpt-web")
+        compare(g.effect, { type: "url", url: "https://chatgpt.com/?prompt=hello" })
+        compare(Ai.plan("chatgpt", "cli", false, all, "x").target, "chatgpt-web")
     }
     function test_missing_targets_fall_back_to_the_browser_and_say_so() {
         var c = Ai.plan("claude", "desktop", false, {}, "hello")
@@ -44,7 +47,6 @@ TestCase {
         var payload = "--help $(touch /tmp/no) `id` \"quoted\""
         var c = Ai.plan("claude", "cli", false, all, payload)
         compare(c.effect.argv, ["omarchy-launch-terminal", "claude", payload])
-        compare(Ai.plan("chatgpt", "cli", false, all, "x").effect.argv[1], "codex")
     }
     function test_scheme_handler_fallback_when_binary_missing() {
         compare(Ai.openLink("claude-desktop", "claude://x", {}), { type: "url", url: "claude://x" })

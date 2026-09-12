@@ -3,7 +3,7 @@ var lightboxImage = document.getElementById('lightbox-image')
 var lightboxTitle = document.getElementById('lightbox-title')
 var previousFocus
 var labels = {
-  apps: 'Applications', clipboard: 'Clipboard history', files: 'File search', codex: 'Codex inside Keystroke',
+  apps: 'Applications', clipboard: 'Clipboard history', files: 'File search', claude: 'Claude inside Keystroke',
   voice: 'Voice control', calculator: 'Calculator', converter: 'Temperature conversion', extensions: 'Extensions',
   colors: 'Colors', timer: 'Timer extension', fuzzy: 'Fuzzy settings search', emoji: 'Emoji', settings: 'Settings',
   dictation: 'Dictate to Clipboard', units: 'Unit conversion', timezone: 'Time zones', 'extension-detail': 'An extension\u2019s page',

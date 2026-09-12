@@ -24,7 +24,7 @@ Item {
       { key: "provider", type: "enum", label: "Preferred assistant", "default": "chatgpt", options: ["chatgpt", "claude"],
         description: "Listed first among the fallbacks" },
       { key: "mode", type: "enum", label: "Open conversations in", "default": "desktop", options: ["desktop", "cli", "browser"],
-        description: "Controls Claude; ChatGPT opens in the browser. Codex has its own provider settings." },
+        description: "Controls ChatGPT here; Claude has its own provider with an inline conversation." },
       { key: "autoSend", type: "boolean", label: "Send immediately in the browser", "default": false,
         description: "ChatGPT only. Claude and the desktop apps always let you review the prompt first" }
     ],
@@ -33,7 +33,7 @@ Item {
 
   Process {
     id: detect
-    command: ["bash", "-lc", "for c in claude-desktop chatgpt claude codex; do command -v \"$c\" >/dev/null 2>&1 && echo \"$c\"; done"]
+    command: ["bash", "-lc", "for c in claude-desktop chatgpt claude; do command -v \"$c\" >/dev/null 2>&1 && echo \"$c\"; done"]
     running: true
     stdout: StdioCollector {
       onStreamFinished: {

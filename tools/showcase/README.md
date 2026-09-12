@@ -21,7 +21,7 @@ current theme), with a fake `curl` that answers Translate from a table, a
 `wl-paste` that finds no selection, and a fake `OMARCHY_PATH` whose
 `omarchy-menu-keybindings` prints demo binds. Every row on screen is what
 the providers compute. The three states the real palette cannot reach
-offline (the Applications list, a Codex conversation, a live recording) come
+offline (the Applications list, a Claude conversation, a live recording) come
 from the fixture palette below, run through the same offscreen window. The
 Timer's countdown in the bar is the real `BarWidget.qml` against a fake bar,
 saved as `bar-timer.png`. Set `KEYSTROKE_SHOWCASE_DEBUG=1` to see

@@ -11,7 +11,7 @@ const fs = require('fs')
     ['landscape',null,800,'keystroke-showcase.png'],
     ['square',null,1200,'keystroke-square.png'],
     ['social',null,630,'social-card.png'],
-    ...['codex','voice','clipboard','calculator'].map(shot=>['single',shot,900,'keystroke-'+shot+'.png'])
+    ...['claude','voice','clipboard','calculator'].map(shot=>['single',shot,900,'keystroke-'+shot+'.png'])
   ]
   for (const [mode,shot,height,name] of modes) {
     const page = await browser.newPage({viewport:{width:1200,height},deviceScaleFactor:2})

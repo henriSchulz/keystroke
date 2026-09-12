@@ -12,9 +12,9 @@ scaled 4x so a 640x540 card becomes the 2560x2160 PNG the site expects:
   table, `wl-paste` finds no selection) and a fake OMARCHY_PATH whose
   `omarchy-menu-keybindings` prints demo binds. Everything on screen is what
   the providers compute; nothing here draws rows by hand.
-- the fixture palette `prepare.py` builds (stubbed registry, voice and Codex
+- the fixture palette `prepare.py` builds (stubbed registry, voice and Claude
   session) for the three staged states the real one cannot reach offline:
-  the Applications list, a Codex conversation and a live voice recording.
+  the Applications list, a Claude conversation and a live voice recording.
 
 The Timer's countdown in the bar is the real `BarWidget.qml` in a bar-sized
 window against a fake bar, saved as `bar-timer.png`.
@@ -84,7 +84,7 @@ REAL = [
                                                              {"open": {"scope": "extensions/translate", "title": "Translate"}, "wait": 600},
                                                              {"activate": "Enabled", "wait": 400}], confirm=True),
 ]
-FIXTURE = ["apps", "codex", "voice"]
+FIXTURE = ["apps", "claude", "voice"]
 
 RUNNER = '''import QtQuick
 import Quickshell
@@ -290,7 +290,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="keystroke-showcase-") as temp:
         work = Path(temp)
         project = work / "project"
-        shutil.copytree(ROOT, project, ignore=shutil.ignore_patterns(".git", ".claude", ".agents", ".codex", "tests", "site", "__pycache__", "experiments", "docs"))
+        shutil.copytree(ROOT, project, ignore=shutil.ignore_patterns(".git", ".claude", ".agents", "tests", "site", "__pycache__", "experiments", "docs"))
         (work / "qs").symlink_to("/usr/share/omarchy/shell")
         patch_palette(project / "Keystroke.qml")
         home = fake_home(work)

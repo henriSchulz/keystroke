@@ -14,7 +14,7 @@ TestCase {
             ],
             paletteValues: { density: "compact", showPreview: true },
             entries: [
-                { key: "ai", name: "AI & Web Search", description: "Continue any query in Claude, ChatGPT/Codex or Google", icon: "✳", iconFont: "", color: "#e79c85",
+                { key: "ai", name: "AI & Web Search", description: "Continue any query in Claude, ChatGPT or Google", icon: "✳", iconFont: "", color: "#e79c85",
                   source: "bundled", extensionId: "", enabled: true,
                   schemas: [
                       { key: "provider", type: "enum", label: "Preferred assistant", "default": "chatgpt", options: ["chatgpt", "claude"], description: "Listed first among the fallbacks" },

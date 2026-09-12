@@ -17,7 +17,7 @@ assert manifest.get('keepLoaded') is True, 'manifest.json must set "keepLoaded":
 with tempfile.TemporaryDirectory(prefix='keystroke-palette-') as temp:
     work = Path(temp)
     project = work/'project'
-    shutil.copytree(root, project, ignore=shutil.ignore_patterns('.git', '.claude', '.agents', '.codex', 'tests', '__pycache__'))
+    shutil.copytree(root, project, ignore=shutil.ignore_patterns('.git', '.claude', '.agents', 'tests', '__pycache__'))
     for name, target in [('qs', '/usr/share/omarchy/shell'), ('Commons', '/usr/share/omarchy/shell/Commons'), ('Ui', '/usr/share/omarchy/shell/Ui')]:
         (work/name).symlink_to(target)
     p=project/'Keystroke.qml'
@@ -126,15 +126,15 @@ ShellRoot {
       test.check(copies.length === 1 && copies[0].action.text === "typed replacement", "new query forgets prior speech")
       var selected = palette.selected
       palette.voiceRawText = "Original spoken request, please."
-      palette.showProviderView("codex")
+      palette.showProviderView("claude")
       palette.voiceRawText = "" // A follow-up voice session clears the host transcript.
       test.check(palette.providerViewActive, "conversation opens inside palette")
       test.check(palette.goBack(), "host handles back from provider view")
       test.check(palette.opened && !palette.providerViewActive && palette.testSearch.text === "typed replacement" && palette.selected === selected, "back restores results and selection without closing")
       test.check(palette.voiceRawText === "Original spoken request, please.", "back restores original query prose after voice follow-ups")
-      palette.open('{"scope":"codex","title":"Codex"}')
-      palette.showProviderView("codex");palette.goBack()
-      test.check(palette.opened && palette.scope === "codex", "back keeps the parent provider scope")
+      palette.open('{"scope":"claude","title":"Claude"}')
+      palette.showProviderView("claude");palette.goBack()
+      test.check(palette.opened && palette.scope === "claude", "back keeps the parent provider scope")
       console.log("PASS: dictation keys, final correction, cancellation, raw prose, model bypass")
       Qt.quit(); test.stage = 3
     }
