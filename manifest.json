@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "evindor.keystroke",
+  "name": "Keystroke",
+  "version": "1.4.2",
+  "author": "Arseniy Zarechnev",
+  "license": "MIT",
+  "description": "A Raycast-style command palette that replaces the Omarchy menu, with voice, Codex and community extensions",
+  "homepage": "https://github.com/evindor/keystroke",
+  "kinds": [
+    "menu",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "menu": "Keystroke.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Keystroke",
+    "description": "Opens the Keystroke command palette",
+    "category": "Compositor",
+    "allowMultiple": false,
+    "defaultSection": "left"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.menu"
+  }
+}
