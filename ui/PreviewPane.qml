@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Commons
+import "../henri-ui/Motion.js" as Motion
 
 // Right-hand detail for the selected row: label, swatch, text or image, hint.
 Item {
@@ -64,12 +65,12 @@ Item {
     font.family: Style.font.menuFamily
     font.pixelSize: Style.font.caption
     font.letterSpacing: 2
-    color: Util.alpha(root.foreground, 0.5)
+    color: Util.alpha(root.foreground, Motion.secondaryTextAlpha)
   }
   Rectangle {
     id: swatch
     y: Style.space(44); width: parent.width; height: Style.space(96)
-    radius: Style.cornerRadius
+    radius: Style.space(Motion.radiusControl)
     visible: !!root.row.swatch
     color: root.row.swatch || "transparent"
     border.width: 1
@@ -127,7 +128,7 @@ Item {
     width: parent.width
     text: root.row.previewDetail || (root.row.verb ? "Press return to " + String(root.row.verb).toLowerCase() : "")
     textFormat: Text.PlainText
-    color: Util.alpha(root.foreground, 0.55)
+    color: Util.alpha(root.foreground, Motion.secondaryTextAlpha)
     font.family: Style.font.menuFamily
     font.pixelSize: Style.font.bodySmall
     wrapMode: Text.Wrap

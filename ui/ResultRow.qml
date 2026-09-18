@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "../henri-ui/Motion.js" as Motion
 
 // One result. Fixed roles only; the host updates delegates in place while
 // typing, so nothing here may depend on object identity.
@@ -21,7 +22,8 @@ BorderSurface {
   property bool disabled: false
   property bool answer: false
   property bool selected: false
-  // Off when the host paints one gliding highlight behind the rows instead.
+  // Off when the host paints one highlight behind the rows instead.
+  // Selection switches instantly either way (henri-ui menu rule: no glide, no fade).
   property bool paintsSelection: true
   // The activation flash: a brief pulse of the selected text color, rising
   // then fading, in milliseconds. Both 0 disables it.
@@ -40,10 +42,10 @@ BorderSurface {
   readonly property int chip: compact ? Style.space(28) : Style.space(34)
 
   height: compact ? Style.space(46) : Style.space(56)
-  radius: Style.cornerRadius
-  color: selected && paintsSelection ? selectedBackground : "transparent"
+  radius: Style.space(Motion.radiusRow)
+  color: selected && paintsSelection ? selectedBackground : Util.alpha(selectedBackground, 0)
   borderSpec: selected && paintsSelection ? selectedBorderSpec : Border.none()
-  opacity: disabled ? 0.62 : 1
+  opacity: disabled ? Motion.disabledOpacity : 1
   Accessible.role: Accessible.ListItem
   Accessible.name: title + ". " + subtitle
   Accessible.onPressAction: root.activated()
@@ -60,8 +62,8 @@ BorderSurface {
     opacity: 0
     SequentialAnimation {
       id: flashAnim
-      NumberAnimation { target: flashLayer; property: "opacity"; to: 0.3; duration: root.flashRise; easing.type: Easing.OutQuad }
-      NumberAnimation { target: flashLayer; property: "opacity"; to: 0; duration: root.flashFall; easing.type: Easing.InQuad }
+      NumberAnimation { target: flashLayer; property: "opacity"; to: 0.3; duration: root.flashRise; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut }
+      NumberAnimation { target: flashLayer; property: "opacity"; to: 0; duration: root.flashFall; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeExit }
     }
   }
 
@@ -71,8 +73,8 @@ BorderSurface {
     anchors.verticalCenter: parent.verticalCenter
     width: root.chip
     height: width
-    radius: Math.min(Style.cornerRadius, Style.space(root.compact ? 7 : 9))
-    color: root.iconSource && !root.shortcut ? "transparent" : (root.answer || root.shortcut ? Util.alpha(root.accent, 0.16) : Util.alpha(root.foreground, 0.07))
+    radius: Style.space(Motion.radiusControl)
+    color: root.iconSource && !root.shortcut ? Util.alpha(root.foreground, 0) : (root.answer || root.shortcut ? Util.alpha(root.accent, 0.16) : Util.alpha(root.foreground, 0.07))
     Text {
       anchors.centerIn: parent
       visible: !!root.shortcut || !root.iconSource || appIcon.status !== Image.Ready
@@ -128,7 +130,7 @@ BorderSurface {
         color: Util.alpha(root.foreground, 0.08)
         border.width: 1
         border.color: Util.alpha(root.foreground, 0.14)
-        Text { id: badgeLabel; anchors.centerIn: parent; text: root.badge; textFormat: Text.PlainText; color: Util.alpha(root.foreground, 0.7); font.family: Style.font.menuFamily; font.pixelSize: Style.font.caption - 1 }
+        Text { id: badgeLabel; anchors.centerIn: parent; text: root.badge; textFormat: Text.PlainText; color: Util.alpha(root.foreground, Motion.secondaryTextAlpha); font.family: Style.font.menuFamily; font.pixelSize: Style.font.caption - 1 }
       }
     }
     Text {
@@ -136,7 +138,8 @@ BorderSurface {
       width: parent.width
       text: root.subtitle
       textFormat: Text.PlainText
-      color: Util.alpha(root.textColor, root.selected ? 0.72 : 0.55)
+      // Secondary text; on the selection it takes the selection's own text colour.
+      color: root.selected ? root.selectedText : Util.alpha(root.foreground, Motion.secondaryTextAlpha)
       font.family: Style.font.menuFamily
       font.pixelSize: Style.font.bodySmall
       elide: Text.ElideRight
@@ -154,7 +157,7 @@ BorderSurface {
       anchors.verticalCenter: parent.verticalCenter
       text: root.hint
       textFormat: Text.PlainText
-      color: Util.alpha(root.textColor, 0.55)
+      color: root.selected ? root.selectedText : Util.alpha(root.foreground, Motion.secondaryTextAlpha)
       font.family: Style.font.menuFamily
       font.pixelSize: Style.font.caption
     }
@@ -162,7 +165,7 @@ BorderSurface {
       anchors.verticalCenter: parent.verticalCenter
       text: root.accessory ? root.accessory : (root.disabled ? "" : (root.selected ? "↵" : (root.verb === "Open" ? "›" : "")))
       textFormat: Text.PlainText
-      color: root.accessory ? root.textColor : Util.alpha(root.textColor, root.selected ? 0.9 : 0.4)
+      color: root.accessory || root.selected ? root.textColor : Util.alpha(root.textColor, Motion.disabledOpacity)
       font.family: Style.font.menuFamily
       font.pixelSize: root.accessory ? Style.font.bodySmall : Style.font.heading
     }

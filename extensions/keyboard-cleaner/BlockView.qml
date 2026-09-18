@@ -3,6 +3,8 @@ import QtQuick
 import qs.Commons
 import qs.Ui as Ui
 import "core/Parser.js" as Parser
+import "../../henri-ui/Motion.js" as Motion
+import "../../henri-ui" as HUi
 
 // The countdown while input is blocked. Keystroke loads this component
 // over its results (`provider-view`), injects `host`, and calls
@@ -20,7 +22,7 @@ FocusScope {
   property var service: null
 
   readonly property color foreground: root.host ? root.host.foreground : "white"
-  readonly property color muted: root.host ? root.host.muted : "#aaa"
+  readonly property color muted: root.host ? root.host.muted : Util.alpha(foreground, Motion.secondaryTextAlpha)
   readonly property color accent: root.host ? root.host.accent : "#7aa2f7"
   readonly property color hairline: root.host ? root.host.hairline : "#333"
   readonly property string fontFamily: root.host && root.host.fontFamily ? root.host.fontFamily : Style.font.menuFamily
@@ -74,7 +76,10 @@ FocusScope {
     ignoreUnknownSignals: true
     function onChanged() { root.refresh() }
   }
-  Timer { interval: 250; repeat: true; running: true; onTriggered: root.refresh() }
+  // Sampling interval of the countdown; the progress bar glides linearly over
+  // exactly one tick so it moves continuously (data rate, not a motion token).
+  readonly property int tick: 250
+  Timer { interval: root.tick; repeat: true; running: true; onTriggered: root.refresh() }
 
   Keys.onPressed: function(event) {
     if (event.key === Qt.Key_Escape) { root.host.cancel(); event.accepted = true }
@@ -84,8 +89,8 @@ FocusScope {
   SequentialAnimation on pulse {
     running: root.urgent
     loops: Animation.Infinite
-    NumberAnimation { from: 1; to: 0.55; duration: 400; easing.type: Easing.InOutQuad }
-    NumberAnimation { from: 0.55; to: 1; duration: 400; easing.type: Easing.InOutQuad }
+    NumberAnimation { from: 1; to: 0.55; duration: Motion.slow; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeInOut }
+    NumberAnimation { from: 0.55; to: 1; duration: Motion.slow; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeInOut }
   }
 
   // A current Keystroke paints the backdrop behind this view, inside the
@@ -100,11 +105,11 @@ FocusScope {
     property string label: ""
     implicitWidth: capText.implicitWidth + Style.space(12)
     implicitHeight: Style.space(22)
-    radius: Math.min(Style.cornerRadius, Style.space(5))
+    radius: Style.space(Motion.radiusChip)
     color: Util.alpha(root.foreground, 0.07)
     border.width: 1
     border.color: Util.alpha(root.foreground, 0.14)
-    Text { id: capText; anchors.centerIn: parent; text: parent.label; textFormat: Text.PlainText; color: Util.alpha(root.foreground, 0.6); font.family: root.fontFamily; font.pixelSize: root.fontCaption }
+    Text { id: capText; anchors.centerIn: parent; text: parent.label; textFormat: Text.PlainText; color: Util.alpha(root.foreground, Motion.secondaryTextAlpha); font.family: root.fontFamily; font.pixelSize: root.fontCaption }
   }
 
   component ActionButton: Ui.Button {
@@ -156,16 +161,17 @@ FocusScope {
       anchors.centerIn: parent
       width: parent.width * 0.85
       spacing: Style.space(14)
-      Text {
+      // The countdown crossfades from second to second instead of snapping.
+      HUi.CrossfadeText {
         opacity: root.urgent ? root.pulse : 1
         text: root.error ? "!" : root.done ? "✓" : Parser.shortDuration(root.remaining)
         color: root.done || root.urgent ? root.accent : root.foreground
-        font.family: root.fontFamily
-        font.pixelSize: root.fontTitle * 6
-        font.weight: Font.DemiBold
+        fontFamily: root.fontFamily
+        fontSize: root.fontTitle * 6
+        fontWeight: Font.DemiBold
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
-        Behavior on color { ColorAnimation { duration: 200 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut } }
       }
       Text {
         text: root.body()
@@ -193,7 +199,7 @@ FocusScope {
       radius: height / 2
       color: root.error ? root.muted : root.accent
       opacity: root.urgent ? root.pulse : 1
-      Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.Linear } }
+      Behavior on width { NumberAnimation { duration: root.tick; easing.type: Easing.Linear } }
     }
   }
 

@@ -4,6 +4,8 @@ import qs.Commons
 import qs.Ui as Ui
 import "../ui"
 import "../voice"
+import "../henri-ui/Motion.js" as Motion
+import "../henri-ui" as HUi
 
 Item {
   id: root
@@ -12,7 +14,7 @@ Item {
   property string voicePrefix: ""
   property string localStatus: ""
   readonly property color foreground: host ? host.foreground : "white"
-  readonly property color muted: host ? host.muted : "#aaa"
+  readonly property color muted: host ? host.muted : Util.alpha(foreground, Motion.secondaryTextAlpha)
   readonly property color accent: host ? host.accent : "#cba6f7"
   readonly property string fontFamily: host && host.fontFamily ? host.fontFamily : Style.font.menuFamily
   readonly property int fontInput: host ? host.fontInput : Style.font.heading
@@ -21,6 +23,11 @@ Item {
   readonly property int fontLabel: host ? host.fontLabel : Style.font.bodySmall
   readonly property int fontCaption: host ? host.fontCaption : Style.font.caption
   readonly property bool approval: !!(session && session.permission)
+  // Waiting feedback only after 300 ms (henri-ui 3b.8).
+  property bool connectingShown: false
+  readonly property bool connecting: !!(session && session.busy) && !history.count
+  onConnectingChanged: { if (connecting) connectingDelay.restart(); else { connectingDelay.stop(); connectingShown = false } }
+  Timer { id: connectingDelay; interval: 300; onTriggered: root.connectingShown = root.connecting }
   function focusInput() { composer.forceActiveFocus(); composer.cursorPosition = composer.text.length }
   function beginVoice() { voicePrefix = session.draft ? session.draft.replace(/\s*$/, " ") : "" }
   function transcript(text, final) { session.draft = voicePrefix + text; composer.cursorPosition = composer.text.length }
@@ -59,7 +66,8 @@ Item {
     signal triggered()
     focusable: true
     enabled: available
-    opacity: enabled ? 1 : 0.4
+    opacity: enabled ? 1 : Motion.disabledOpacity
+    Behavior on opacity { NumberAnimation { duration: Motion.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut } }
     foreground: root.foreground
     accent: root.accent
     fontFamily: root.fontFamily
@@ -93,7 +101,7 @@ Item {
     }
     ActionButton { id: external; anchors.right: parent.right; y: Style.space(33); label: session.busy ? "Stop & continue ↗" : "Continue in Claude Code ↗"; available: !!session.sessionId; onTriggered: session.requestHandoff() }
   }
-  Rectangle { y: top.y + top.height; width: parent.width; height: 1; color: Util.alpha(root.foreground, 0.10) }
+  Rectangle { y: top.y + top.height; width: parent.width; height: 1; color: Util.alpha(root.foreground, Motion.hairlineAlpha) }
   ListModel { id: display }
   ListView {
     id: history
@@ -102,6 +110,11 @@ Item {
     width: parent.width - x * 2; height: Math.max(0, status.y - y - Style.space(12))
     clip: true; spacing: Style.space(16); model: display
     boundsBehavior: Flickable.StopAtBounds
+    // A new message (yours, Claude's reply, activity) fades in; streamed
+    // tokens update the text in place without any motion.
+    add: Transition {
+      NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Motion.base; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut }
+    }
     delegate: Item {
       required property string id
       required property string role
@@ -117,14 +130,25 @@ Item {
         onLinkActivated: function(link) { if (/^https?:\/\//.test(link)) Qt.openUrlExternally(link) }
       }
     }
-    Text { visible: !history.count; anchors.centerIn: parent; width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; text: session.busy ? "Connecting to Claude Code…" : "Ask a question. Keep the conversation here.\nType or use your voice hotkey."; color: root.muted; font.family: root.fontFamily; font.pixelSize: root.fontTitle }
+    Text {
+      id: emptyHint
+      anchors.centerIn: parent; width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap
+      // Busy but nothing shown yet: the idle hint fades out at once and the
+      // connecting line only fades in after the 300 ms waiting threshold.
+      readonly property bool wanted: !history.count && (!session.busy || root.connectingShown)
+      visible: opacity > 0
+      opacity: wanted ? 1 : 0
+      Behavior on opacity { NumberAnimation { duration: emptyHint.wanted ? Motion.fast : Motion.exit(Motion.fast); easing.type: Easing.BezierSpline; easing.bezierCurve: emptyHint.wanted ? Motion.easeOut : Motion.easeExit } }
+      text: session.busy ? "Connecting to Claude Code…" : "Ask a question. Keep the conversation here.\nType or use your voice hotkey."; color: root.muted; font.family: root.fontFamily; font.pixelSize: root.fontTitle
+    }
   }
-  Text {
+  // Status line: changes crossfade instead of snapping.
+  HUi.CrossfadeText {
     id: status
     x: Style.space(22); y: inputBox.y - height - Style.space(10); width: parent.width - x * 2
     text: host && host.voice.active ? (host.voice.phase === "transcribing" ? "Finishing transcript…" : "Listening…") : session.error || root.localStatus || session.activity
     color: session.error ? Color.urgent : root.muted; elide: Text.ElideRight
-    font.family: root.fontFamily; font.pixelSize: root.fontLabel
+    fontFamily: root.fontFamily; fontSize: root.fontLabel
   }
   Ui.BorderSurface {
     id: inputBox
@@ -132,8 +156,9 @@ Item {
     x: Style.space(18); width: parent.width - x * 2
     height: Math.min(Style.space(115), Math.max(Style.space(50), composer.contentHeight + Style.space(24)))
     y: bottom.y - height - Style.space(20)
-    radius: Style.cornerRadius
+    radius: Style.space(Motion.radiusControl)
     color: Style.controlFill(composer.activeFocus, false, root.foreground, root.accent)
+    Behavior on color { ColorAnimation { duration: composer.activeFocus ? Motion.instant : Motion.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut } }
     borderSpec: Border.controlSpec(composer.activeFocus ? "focus" : "normal", root.foreground, root.accent)
     Flickable {
       id: editorScroll
@@ -178,7 +203,7 @@ Item {
     VoiceWave { anchors.right: parent.right; anchors.rightMargin: Style.space(12); anchors.verticalCenter: parent.verticalCenter; width: Style.space(48); height: Style.space(32); visible: host && host.voice.active; mode: host ? host.voice.phase : "idle"; level: host ? host.voice.level : 0; history: host ? host.voice.history : []; accent: root.accent; foreground: root.foreground }
     ActionButton { anchors.right: parent.right; anchors.rightMargin: Style.space(9); anchors.verticalCenter: parent.verticalCenter; visible: host && !host.voice.active; label: "Mic"; onTriggered: { root.focusInput(); host.voiceBegin("tap") } }
   }
-  Rectangle { y: bottom.y - Style.space(10); width: parent.width; height: 1; color: Util.alpha(root.foreground, 0.10) }
+  Rectangle { y: bottom.y - Style.space(10); width: parent.width; height: 1; color: Util.alpha(root.foreground, Motion.hairlineAlpha) }
   Row {
     id: bottom
     enabled: !root.approval
@@ -191,7 +216,12 @@ Item {
   }
   ClipboardTransfer { id: answerCopy; onCopied: root.localStatus = "Answer copied"; onFailed: message => root.localStatus = message }
   Rectangle {
-    anchors.fill: parent; visible: root.approval; color: host ? host.background : "#222"; z: 10
+    // The permission sheet fades over the conversation instead of snapping.
+    anchors.fill: parent; color: host ? host.background : "#222"; z: 10
+    visible: root.approval || opacity > 0
+    enabled: root.approval
+    opacity: root.approval ? 1 : 0
+    Behavior on opacity { NumberAnimation { duration: root.approval ? Motion.base : Motion.exit(Motion.base); easing.type: Easing.BezierSpline; easing.bezierCurve: root.approval ? Motion.easeOut : Motion.easeExit } }
     MouseArea { anchors.fill: parent }
     Flickable {
       anchors.fill: parent; anchors.margins: Style.space(22); clip: true

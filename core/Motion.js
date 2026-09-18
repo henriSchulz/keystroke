@@ -1,8 +1,12 @@
 .pragma library
 
-// Animation tiers for the palette. One table, in milliseconds, so the feel
-// can be tuned in one place: Off shows every change at once, Snappy ties
-// changes together over a couple of frames, Fluid eases them.
+// Animation tiers for the palette: Off shows every change at once, Snappy
+// ties changes together quickly, Fluid eases them.
+//
+// The palette's QML now takes every duration, curve and spring from the
+// henri-ui tokens (henri-ui/Motion.js) and only reads `level` (0 off,
+// 1 snappy, 2 fluid) and the px offsets below. The millisecond columns are
+// kept as the tier's historical reference (tests/tst_motion.qml checks them).
 //
 //   slide      a menu level entering (results and breadcrumb) after navigate/back
 //   selection  the highlight gliding to the newly selected row

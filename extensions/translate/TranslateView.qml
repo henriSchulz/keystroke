@@ -4,6 +4,8 @@ import Quickshell
 import qs.Commons
 import qs.Ui as Ui
 import "core/Translate.js" as Translate
+import "../../henri-ui/Motion.js" as Motion
+import "../../henri-ui" as HUi
 
 // The editor: type or dictate on top, one block per target language below,
 // then the reverse translation as a check. Keystroke loads this component
@@ -27,7 +29,7 @@ Item {
   property var result: null
   property var blocks: []
   readonly property color foreground: root.host ? root.host.foreground : "white"
-  readonly property color muted: root.host ? root.host.muted : "#aaa"
+  readonly property color muted: root.host ? root.host.muted : Util.alpha(foreground, Motion.secondaryTextAlpha)
   readonly property color accent: root.host ? root.host.accent : "#61afef"
   readonly property color hairline: root.host ? root.host.hairline : "#333"
   readonly property string fontFamily: root.host && root.host.fontFamily ? root.host.fontFamily : Style.font.menuFamily
@@ -95,7 +97,8 @@ Item {
     signal triggered()
     focusable: true
     enabled: available
-    opacity: enabled ? 1 : 0.4
+    opacity: enabled ? 1 : Motion.disabledOpacity
+    Behavior on opacity { NumberAnimation { duration: Motion.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut } }
     foreground: root.foreground
     accent: root.accent
     fontFamily: root.fontFamily
@@ -114,11 +117,11 @@ Item {
     property bool bright: false
     implicitWidth: capText.implicitWidth + Style.space(12)
     implicitHeight: Style.space(22)
-    radius: Math.min(Style.cornerRadius, Style.space(5))
+    radius: Style.space(Motion.radiusChip)
     color: Util.alpha(root.foreground, bright ? 0.14 : 0.07)
     border.width: 1
     border.color: Util.alpha(root.foreground, bright ? 0.28 : 0.14)
-    Text { id: capText; anchors.centerIn: parent; text: parent.label; textFormat: Text.PlainText; color: Util.alpha(root.foreground, parent.bright ? 0.95 : 0.6); font.family: root.fontFamily; font.pixelSize: root.fontCaption }
+    Text { id: capText; anchors.centerIn: parent; text: parent.label; textFormat: Text.PlainText; color: Util.alpha(root.foreground, parent.bright ? 0.95 : Motion.secondaryTextAlpha); font.family: root.fontFamily; font.pixelSize: root.fontCaption }
   }
   component FooterHint: Row {
     property string label: ""
@@ -198,7 +201,7 @@ Item {
         Text {
           anchors.fill: parent; visible: !editor.text
           text: "Type or dictate text to translate"
-          color: Util.alpha(root.foreground, 0.3); font: editor.font
+          color: Util.alpha(root.foreground, Motion.disabledOpacity); font: editor.font
         }
       }
       Rectangle { width: parent.width; height: 1; color: root.hairline; visible: root.blocks.length > 0 }
@@ -241,12 +244,13 @@ Item {
     }
   }
 
-  Text {
+  // Status line: changes crossfade instead of snapping.
+  HUi.CrossfadeText {
     id: statusLine
     x: Style.space(22); y: bottom.y - height - Style.space(12); width: parent.width - x * 2
     text: root.host && root.host.voice.active ? (root.host.voice.phase === "transcribing" ? "Finishing transcript…" : "Listening…") : root.status
     color: root.muted; elide: Text.ElideRight
-    font.family: root.fontFamily; font.pixelSize: root.fontLabel
+    fontFamily: root.fontFamily; fontSize: root.fontLabel
   }
 
   // ---------------------------------------------------------------- footer

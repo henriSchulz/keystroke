@@ -1,6 +1,8 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "../henri-ui/Motion.js" as Motion
+import "../henri-ui" as HUi
 
 // Keystroke's confirmation: the shell's ConfirmDialog (same look, same keys)
 // with an optional note in the muted colour under the question. Turning an
@@ -18,12 +20,12 @@ Item {
   property int selectedIndex: 1
   property color background: Color.background
   property color foreground: Color.foreground
-  property color muted: Util.alpha(Color.foreground, 0.6)
+  property color muted: Util.alpha(Color.foreground, Motion.secondaryTextAlpha)
   property color scrim: Util.alpha(Color.background, 0.7)
   property color selectedBackground: Util.alpha(Color.foreground, 0.08)
   property color selectedText: Color.accent
   property string fontFamily: Style.font.family
-  property int cornerRadius: Style.cornerRadius
+  property int cornerRadius: Style.space(Motion.radiusPopover)
 
   signal canceled()
   signal confirmed()
@@ -43,7 +45,27 @@ Item {
     return false
   }
 
-  visible: opened
+  // Fades (and scales, popover-style) in and out instead of snapping; the
+  // texts hold their last values while it fades out, and it takes no input
+  // once it starts closing.
+  visible: opened || opacity > 0
+  enabled: opened
+  opacity: opened ? 1 : 0
+  Behavior on opacity {
+    NumberAnimation {
+      duration: root.opened ? Motion.slow : Motion.exit(Motion.slow)
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: root.opened ? Motion.easeOut : Motion.easeExit
+    }
+  }
+  onOpenedChanged: if (opened && opacity < 0.01) cardScale.snap(Motion.popoverFromScale)
+  HUi.SpringValue { id: cardScale; preset: Motion.gentle; to: root.opened ? 1 : Motion.exitToScale }
+  property string shownMessage: ""
+  property string shownDetail: ""
+  property string shownConfirmText: ""
+  Binding { target: root; property: "shownMessage"; value: root.message; when: root.opened; restoreMode: Binding.RestoreNone }
+  Binding { target: root; property: "shownDetail"; value: root.detail; when: root.opened; restoreMode: Binding.RestoreNone }
+  Binding { target: root; property: "shownConfirmText"; value: root.confirmText; when: root.opened; restoreMode: Binding.RestoreNone }
 
   Rectangle {
     anchors.fill: parent
@@ -56,6 +78,7 @@ Item {
       width: Math.min(parent.width - Style.space(32), Style.space(400))
       height: card.contentTopInset + card.contentBottomInset + column.implicitHeight + Style.space(20) + Style.space(34)
       anchors.centerIn: parent
+      scale: cardScale.value
       color: root.background
       borderSpec: Border.flat(root.selectedText, Style.normalBorderWidth)
       padding: Style.space(18)
@@ -80,7 +103,7 @@ Item {
           Text {
             width: parent.width
             textFormat: Text.PlainText
-            text: root.message
+            text: root.shownMessage
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.title
@@ -88,9 +111,9 @@ Item {
           }
           Text {
             width: parent.width
-            visible: root.detail.length > 0
+            visible: root.shownDetail.length > 0
             textFormat: Text.PlainText
-            text: root.detail
+            text: root.shownDetail
             color: root.muted
             font.family: root.fontFamily
             font.pixelSize: Style.font.bodySmall
@@ -104,7 +127,7 @@ Item {
           spacing: Style.space(10)
 
           Repeater {
-            model: [root.cancelText, root.confirmText]
+            model: [root.cancelText, root.shownConfirmText]
 
             BorderSurface {
               required property int index
@@ -117,11 +140,18 @@ Item {
               height: Style.space(34)
               color: selected
                 ? (destructive ? Util.alpha(Color.urgent, 0.22) : root.selectedBackground)
-                : "transparent"
+                : Util.alpha(destructive ? Color.urgent : root.selectedBackground, 0)
               borderSpec: Border.flat(destructive
                 ? (selected ? Color.urgent : Util.alpha(Color.urgent, 0.56))
                 : (selected ? root.selectedText : Util.alpha(root.foreground, 0.38)), Style.normalBorderWidth)
-              radius: 0
+              radius: Style.space(Motion.radiusControl)
+              // Hover/keyboard selection: in instant, out fast.
+              Behavior on color {
+                ColorAnimation {
+                  duration: selected ? Motion.instant : Motion.fast
+                  easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut
+                }
+              }
 
               Text {
                 textFormat: Text.PlainText

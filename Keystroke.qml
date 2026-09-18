@@ -16,7 +16,9 @@ import "core/VoiceBindings.js" as VoiceBindings
 import "core/Intent.js" as Intent
 import "core/Patterns.js" as Patterns
 import "core/SmartMatch.js" as SmartMatch
-import "core/Motion.js" as Motion
+import "core/Motion.js" as MotionTiers
+import "henri-ui/Motion.js" as Motion
+import "henri-ui" as HUi
 import "core/Commands.js" as Commands
 import "matching" as Matching
 
@@ -118,9 +120,9 @@ Item {
     { key: "showPreview", type: "boolean", label: "Show result previews", "default": true },
     { key: "animations", type: "enum", label: "Animations", "default": "snappy", options: ["off", "snappy", "fluid"],
       description: "Off shows every change at once; Snappy ties changes together over a couple of frames; Fluid eases them" },
-    { key: "windowTransition", type: "enum", label: "Window transition", "default": "instant", options: ["instant", "fade", "slide"],
+    { key: "windowTransition", type: "enum", label: "Window transition", "default": "fade", options: ["instant", "fade", "slide"],
       optionLabels: { instant: "Instant", fade: "Fade", slide: "Slide up" },
-      description: "Instant maps and unmaps the palette at once; Fade and Slide up follow the animation tier" }
+      description: "Instant maps and unmaps the palette at once; Fade (fade and scale) and Slide up follow the animation tier" }
   ]
   property var paletteSettings: Settings.values(config, ["palette"], paletteSchema)
   readonly property var matchingSchema: SmartMatch.SCHEMA
@@ -454,16 +456,27 @@ Item {
   readonly property bool previewVisible: !dmenuActive && paletteSettings.showPreview !== false && !!(current.preview || current.previewImage || current.swatch)
 
   // ---------------------------------------------------------------- motion
-  // Three tiers (core/Motion.js) drive every transition: the window's
-  // reveal, a menu level entering, the selection gliding and the activated
-  // row's flash. A duration of 0 turns a transition into a plain assignment.
-  readonly property var motion: Motion.profile(paletteSettings.animations)
+  // The tier setting (core/Motion.js: off | snappy | fluid) only decides
+  // whether and how lively things move; every duration, curve and spring
+  // comes from the henri-ui tokens (henri-ui/Motion.js). Off shows every
+  // change at once. Selection never glides: the highlight jumps like NSMenu.
+  readonly property var motion: MotionTiers.profile(paletteSettings.animations)
+  readonly property bool animated: motion.level > 0
   readonly property bool windowSlides: paletteSettings.windowTransition === "slide"
   // The window transition is chosen apart from the tier: Instant keeps the
   // rest of the palette animated while the window itself appears at once.
-  readonly property int windowDuration: paletteSettings.windowTransition === "instant" ? 0 : motion.window
+  // Launcher = full-screen surface: fade + scale from popoverFromScale on the
+  // gentle spring over Motion.slower; leaving is faster (0.7x, easeExit).
+  readonly property bool windowAnimated: paletteSettings.windowTransition !== "instant" && animated
+  // A menu level entering after navigate/back: frequent, so short and quiet.
+  readonly property int levelDuration: motion.level >= 2 ? Motion.base : Motion.fast
+  // The activated row's brightening, rising then falling (NSMenu blink).
+  readonly property int flashRise: animated ? Motion.flashDuration : 0
+  readonly property int flashFall: animated ? Motion.flashDuration : 0
+  readonly property int sheenDuration: motion.level >= 2 ? Motion.slower : Motion.slow
   // 0 hidden … 1 shown; the scrim and the card follow it. The layer stays
-  // mapped, without keyboard focus, while `closing` runs it back down.
+  // mapped, without keyboard focus or pointer input, while `closing` runs it
+  // back down.
   property real reveal: 0
   property bool closing: false
   property double flashUntil: 0             // wall clock at which the activated row's flash peaks
@@ -473,25 +486,40 @@ Item {
     revealAnim.stop()
     if (root.opened) {
       root.closing = false
-      if (root.windowDuration > 0) { revealAnim.to = 1; revealAnim.duration = root.windowDuration; revealAnim.restart() }
+      if (root.windowAnimated) {
+        // Only a fully closed card starts from the small pose; reopening
+        // mid-exit just turns around from where it is.
+        if (root.reveal < 0.01) cardScale.snap(Motion.popoverFromScale)
+        revealAnim.to = 1
+        revealAnim.restart()
+      }
       else root.reveal = 1
-    } else if (root.windowDuration > 0) {
+    } else if (root.windowAnimated) {
       // Leaving waits for the flash to peak, so a launch still reads as "that row".
       root.closing = true
       hideDelay.interval = Math.max(0, root.flashUntil - Date.now())
       hideDelay.restart()
     } else { root.reveal = 0; root.closing = false }
   }
-  Timer { id: hideDelay; onTriggered: { if (root.opened) return; revealAnim.to = 0; revealAnim.duration = root.windowDuration; revealAnim.restart() } }
-  // Most of the change lands in the first frames: a reveal that ramps up
-  // gently reads as the palette being late, not as motion.
+  Timer { id: hideDelay; onTriggered: { if (root.opened) return; revealAnim.to = 0; revealAnim.restart() } }
+  // Starts from the current value, so open/close spam turns around smoothly.
   NumberAnimation {
-    id: revealAnim; target: root; property: "reveal"; easing.type: Easing.OutExpo
+    id: revealAnim; target: root; property: "reveal"
+    duration: revealAnim.to > 0.5 ? Motion.slower : Motion.exit(Motion.slower)
+    easing.type: Easing.BezierSpline
+    easing.bezierCurve: revealAnim.to > 0.5 ? Motion.easeOut : Motion.easeExit
     onFinished: if (!root.opened && revealAnim.to === 0) root.closing = false
   }
+  // Card scale: grows from popoverFromScale on open, settles to exitToScale on
+  // the way out (starts with the fade, after the flash peak).
+  HUi.SpringValue {
+    id: cardScale
+    preset: Motion.gentle
+    to: root.opened || hideDelay.running ? 1 : Motion.exitToScale
+  }
   function flash(uid) {
-    if (root.motion.flashRise + root.motion.flashFall <= 0 || !uid) return
-    root.flashUntil = Date.now() + root.motion.flashRise
+    if (root.flashRise + root.flashFall <= 0 || !uid) return
+    root.flashUntil = Date.now() + root.flashRise
     root.flashed(uid)
   }
   // A menu level enters from the side it lives on: a deeper screen from the
@@ -500,18 +528,18 @@ Item {
   property real levelOpacity: 1
   Translate { id: levelShift }
   function slideLevel(direction) {
-    if (root.motion.slide <= 0 || !root.opened) return
+    if (!root.animated || !root.opened) return
     levelAnim.stop()
-    levelShift.x = Motion.levelOffset(direction, Style.space(Motion.LEVEL_SLIDE_PX))
+    levelShift.x = MotionTiers.levelOffset(direction, Style.space(MotionTiers.LEVEL_SLIDE_PX))
     root.levelOpacity = 0
-    levelAnim.duration = root.motion.slide
+    levelAnim.duration = root.levelDuration
     levelAnim.restart()
   }
   ParallelAnimation {
     id: levelAnim
     property int duration: 0
-    NumberAnimation { target: levelShift; property: "x"; to: 0; duration: levelAnim.duration; easing.type: Easing.OutCubic }
-    NumberAnimation { target: root; property: "levelOpacity"; to: 1; duration: levelAnim.duration; easing.type: Easing.OutQuad }
+    NumberAnimation { target: levelShift; property: "x"; to: 0; duration: levelAnim.duration; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut }
+    NumberAnimation { target: root; property: "levelOpacity"; to: 1; duration: levelAnim.duration; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut }
   }
 
   // Theme surfaces, same tokens as the stock menu.
@@ -522,8 +550,9 @@ Item {
   readonly property color selectedText: Color.menu.selectedText
   readonly property var borderSpec: Border.surfaceSpec("menu", "border", Color.menu.border, Math.max(1, Style.space(2)))
   readonly property var selectedBorderSpec: Border.surfaceSpec("menu", "selected-border", Color.menu.selectedBorder, 0)
-  readonly property color hairline: Util.alpha(foreground, 0.12)
-  readonly property color muted: Util.alpha(foreground, 0.55)
+  readonly property color hairline: Util.alpha(foreground, Motion.hairlineAlpha)
+  // Secondary text (hints, captions, footer labels): henri-ui secondary alpha.
+  readonly property color muted: Util.alpha(foreground, Motion.secondaryTextAlpha)
 
   // Type scale for provider views. A view covers the whole card, so it has to
   // carry the palette's own sizes -- including the density bump -- or it reads
@@ -540,7 +569,8 @@ Item {
   readonly property bool paintsViewBackdrop: true
 
   onPendingChanged: { if (pending) loadingDelay.restart(); else { loadingDelay.stop(); showLoading = false } }
-  Timer { id: loadingDelay; interval: 180; onTriggered: root.showLoading = root.pending }
+  // Waiting feedback only after 300 ms (henri-ui 3b.8): quicker work shows nothing.
+  Timer { id: loadingDelay; interval: 300; onTriggered: root.showLoading = root.pending }
   Timer { id: debounce; interval: 25; onTriggered: root.runQuery() }
 
   Registry { id: providerRegistry; host: root }
@@ -1210,6 +1240,9 @@ Item {
     WlrLayershell.layer: WlrLayer.Overlay
     // A launch must find the keyboard free at once, however long the fade-out runs.
     WlrLayershell.keyboardFocus: root.opened ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    // Clicks go through to whatever is underneath as soon as closing starts.
+    mask: root.opened ? null : closingMask
+    Region { id: closingMask }
 
     Rectangle { anchors.fill: parent; color: root.scrim; opacity: root.reveal; MouseArea { anchors.fill: parent; onClicked: root.cancel() } }
 
@@ -1221,9 +1254,15 @@ Item {
         : Math.min(Style.space(root.compact ? 540 : 580), panel.height - Style.gapsOut * 2)
       anchors.horizontalCenter: parent.horizontalCenter
       y: (root.dmenuActive ? Math.max(Style.gapsOut, Math.round((panel.height - height) / 2)) : Math.max(Style.gapsOut, Math.round((panel.height - height) * 0.38)))
-         + (root.windowSlides ? Math.round((1 - root.reveal) * Style.space(Motion.WINDOW_SLIDE_PX)) : 0)
+         + (root.windowSlides ? Math.round((1 - root.reveal) * Style.space(MotionTiers.WINDOW_SLIDE_PX)) : 0)
       opacity: root.reveal
-      radius: Style.cornerRadius
+      scale: root.windowAnimated ? cardScale.value : 1
+      transformOrigin: Item.Top
+      // Composite as one layer while animating, so the rows do not show
+      // through each other at partial opacity.
+      layer.enabled: revealAnim.running || cardScale.running || hideDelay.running
+      layer.smooth: true
+      radius: Style.space(Motion.radiusPanel)
       color: root.background
       borderSpec: root.borderSpec
       clip: true
@@ -1276,7 +1315,7 @@ Item {
             width: Style.space(10); height: width; radius: width / 2
             color: voice.phase === "listening" ? root.accent : Util.alpha(root.accent, 0.55)
             scale: voice.phase === "listening" ? 1 + 0.6 * voice.level : 1
-            Behavior on scale { NumberAnimation { duration: 60 } }
+            Behavior on scale { NumberAnimation { duration: Motion.instant; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut } }
           }
         }
         VoiceWave {
@@ -1304,7 +1343,7 @@ Item {
           visible: sweep.running
           property real span: 0
           function play(prefixLength) {
-            if (!root.motion.sheen || !search.text) return
+            if (!root.animated || !search.text) return
             span = Math.max(Style.space(24), search.positionToRectangle(Math.min(prefixLength, search.text.length)).x + Style.space(6))
             sweep.restart()
           }
@@ -1314,16 +1353,16 @@ Item {
             Rectangle {
               id: sweepBar
               y: Style.space(4); height: parent.height - Style.space(8); width: sheen.span
-              radius: Style.space(4)
+              radius: Style.space(Motion.radiusChip)
               gradient: Gradient {
                 orientation: Gradient.Horizontal
-                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop { position: 0.0; color: Util.alpha(root.accent, 0) }
                 GradientStop { position: 0.5; color: Util.alpha(root.accent, 0.32) }
-                GradientStop { position: 1.0; color: "transparent" }
+                GradientStop { position: 1.0; color: Util.alpha(root.accent, 0) }
               }
             }
           }
-          NumberAnimation { id: sweep; target: sweepBar; property: "x"; from: -sheen.span; to: sheen.span + Style.space(4); duration: root.motion.sheen; easing.type: Easing.InOutQuad }
+          NumberAnimation { id: sweep; target: sweepBar; property: "x"; from: -sheen.span; to: sheen.span + Style.space(4); duration: root.sheenDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeInOut }
         }
         TextInput {
           id: search
@@ -1348,7 +1387,7 @@ Item {
             anchors.fill: parent
             verticalAlignment: Text.AlignVCenter
             text: root.dictationMode ? "Speak or edit your dictation…" : root.dmenuActive ? root.dmenuPrompt + "…" : root.scope ? "Search " + root.scopeTitle.toLowerCase() + "…" : "What would you like to do?"
-            color: Util.alpha(root.foreground, 0.42)
+            color: Util.alpha(root.foreground, Motion.disabledOpacity)
             font: parent.font
             visible: !parent.text && !parent.preeditText && !voice.active
             elide: Text.ElideRight
@@ -1365,7 +1404,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             text: root.commandGhost
             textFormat: Text.PlainText
-            color: Util.alpha(root.foreground, 0.38)
+            color: Util.alpha(root.foreground, Motion.disabledOpacity)
             font: parent.font
             elide: Text.ElideRight
             visible: !!root.commandGhost && !parent.preeditText && !voice.active && parent.cursorPosition === parent.text.length
@@ -1433,7 +1472,7 @@ Item {
         height: root.crumbHeight
         spacing: Style.space(10)
         Text { id: brand; anchors.verticalCenter: parent.verticalCenter; text: "OMARCHY"; textFormat: Text.PlainText; color: root.accent; font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.letterSpacing: 2; font.weight: Font.Bold }
-        Text { anchors.baseline: brand.baseline; text: root.scope ? "›" : "/"; textFormat: Text.PlainText; color: Util.alpha(root.foreground, 0.35); font.family: root.fontFamily; font.pixelSize: Style.font.bodySmall }
+        Text { anchors.baseline: brand.baseline; text: root.scope ? "›" : "/"; textFormat: Text.PlainText; color: Util.alpha(root.foreground, Motion.disabledOpacity); font.family: root.fontFamily; font.pixelSize: Style.font.bodySmall }
         Text {
           anchors.baseline: brand.baseline
           width: Math.max(0, crumbs.parent.width - crumbs.x * 2 - brand.width - Style.space(30))
@@ -1467,9 +1506,10 @@ Item {
           spacing: root.rowSpacing
           boundsBehavior: Flickable.StopAtBounds
           cacheBuffer: root.rowHeight * 4
-          // One highlight glides between rows instead of each row painting
-          // its own; its geometry is bound here so it covers the row and not
-          // the delegate's section header.
+          // One highlight behind the rows instead of each row painting its
+          // own; its geometry is bound here so it covers the row and not the
+          // delegate's section header. It jumps to the new row at once, no
+          // glide and no fade (henri-ui menu rule, like NSMenu).
           highlightFollowsCurrentItem: false
           highlight: BorderSurface {
             readonly property var row: resultList.currentItem
@@ -1478,11 +1518,10 @@ Item {
             width: resultList.width
             height: row ? row.rowHeight : root.rowHeight
             y: row ? row.y + row.rowY : 0
-            opacity: row && row.disabled ? 0.62 : 1
-            radius: Style.cornerRadius
+            opacity: row && row.disabled ? Motion.disabledOpacity : 1
+            radius: Style.space(Motion.radiusRow)
             color: root.selectedBackground
             borderSpec: root.selectedBorderSpec
-            Behavior on y { enabled: root.selectionTouched && root.motion.selection > 0; NumberAnimation { duration: root.motion.selection; easing.type: Easing.OutCubic } }
           }
           delegate: Column {
             id: delegateRoot
@@ -1517,7 +1556,7 @@ Item {
                 x: Style.space(14); anchors.bottom: parent.bottom; anchors.bottomMargin: Style.space(3)
                 text: delegateRoot.section
                 textFormat: Text.PlainText
-                color: Util.alpha(root.foreground, 0.5)
+                color: root.muted
                 font.family: root.fontFamily; font.pixelSize: Style.font.caption; font.weight: Font.Medium; font.letterSpacing: 0.5
               }
             }
@@ -1525,7 +1564,7 @@ Item {
               id: rowItem
               width: parent.width
               paintsSelection: false
-              flashRise: root.motion.flashRise; flashFall: root.motion.flashFall
+              flashRise: root.flashRise; flashFall: root.flashFall
               title: delegateRoot.title; subtitle: delegateRoot.subtitle; icon: delegateRoot.icon; iconFont: delegateRoot.iconFont
               iconSource: delegateRoot.iconSource; tint: delegateRoot.tint; verb: delegateRoot.verb; accessory: delegateRoot.accessory
               badge: delegateRoot.badge; hint: delegateRoot.hint; disabled: delegateRoot.disabled; answer: delegateRoot.answer
@@ -1610,7 +1649,7 @@ Item {
         selectedBackground: root.selectedBackground
         selectedText: root.selectedText
         fontFamily: root.fontFamily
-        cornerRadius: Style.cornerRadius
+        cornerRadius: Style.space(Motion.radiusPopover)
         onCanceled: { root.confirmPending = null; Qt.callLater(function() { search.forceActiveFocus() }) }
         onConfirmed: { var run = root.confirmPending ? root.confirmPending.run : null; root.confirmPending = null; if (run) run() }
       }
