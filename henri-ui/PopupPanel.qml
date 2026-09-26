@@ -64,6 +64,10 @@ PanelWindow {
   property bool popoutSwitchClosing: false
   property bool focusPrimed: false
   property string kind: "popover"
+  // Card fill. Defaults to the theme's popup background at the glass alpha;
+  // a plugin that renders its own material (e.g. an adaptive dark/light
+  // sheet) overrides this instead of painting over the card.
+  property color cardColor: Motion.glass ? Util.alpha(Color.popups.background, Motion.glassPanelAlpha) : Color.popups.background
 
   // Item that should take keyboard focus once the panel maps. Typically a
   // PanelKeyCatcher inside the panel content. Layer-shell grants focus to the
@@ -169,6 +173,11 @@ PanelWindow {
   readonly property real availableCardHeight: screenH > 0
     ? Math.max(120, screenH - ((barPos === "top" || barPos === "bottom") ? barH + gap + margin : margin * 2))
     : 0
+  // Card chrome around the content on each axis: padding plus the border,
+  // which BorderSurface also subtracts from the content area. A plugin that
+  // sizes its content at N px asks for N + this, otherwise the border eats
+  // a pixel per side and the outer tiles get clipped.
+  readonly property real horizontalContentInset: padding * 2 + Border.left(borderSpec) + Border.right(borderSpec)
   readonly property real verticalContentInset: padding * 2 + Border.top(borderSpec) + Border.bottom(borderSpec)
 
   function fittedContentWidth(width, cap) {
@@ -416,7 +425,10 @@ PanelWindow {
     BorderSurface {
       id: card
       anchors.fill: parent
-      color: Color.popups.background
+      // Translucent, not the theme's near-opaque popup background: paired
+      // with the Hyprland blur on this window's namespace (looknfeel.lua),
+      // that's what makes every popup/panel read as frosted glass.
+      color: root.cardColor
       borderSpec: root.borderSpec
       padding: root.padding
       radius: Style.space(root.kind === "panel" ? Motion.radiusPanel : Motion.radiusPopover)
