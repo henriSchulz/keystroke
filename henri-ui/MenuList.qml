@@ -22,6 +22,12 @@ FocusScope {
   property int currentIndex: -1
   property int minWidth: Style.space(180)
   property string fontFamily: Style.font.menuFamily || Style.font.family
+  // Colours default to the theme's menu palette; an Apple-look surface
+  // (apple-ui banner, Notification Center) hands in its own.
+  property color textColor: Color.menu.text
+  property color selectedBackground: Color.menu.selectedBackground
+  property color selectedText: Color.menu.selectedText
+  property color hairline: Util.alpha(Color.foreground, Motion.hairlineAlpha)
   property bool flashing: false
 
   signal activated(int index, var entry)
@@ -86,7 +92,7 @@ FocusScope {
   Highlight {
     id: hl
     glide: false
-    color: Color.menu.selectedBackground     // theme-authored (cupertino: blue)
+    color: root.selectedBackground           // theme-authored (cupertino: blue)
     target: root.currentIndex >= 0 ? rep.itemAt(root.currentIndex) : null
   }
 
@@ -110,8 +116,8 @@ FocusScope {
         required property var modelData
         readonly property bool isSeparator: modelData.separator === true
         readonly property bool isCurrent: root.currentIndex === index && !hl.suppressed
-        readonly property color textColor: isCurrent ? Color.menu.selectedText
-          : modelData.danger ? Color.urgent : Color.menu.text
+        readonly property color textColor: isCurrent ? root.selectedText
+          : modelData.danger ? Color.urgent : root.textColor
 
         width: col.width
         height: isSeparator ? Style.space(9) : Style.space(Motion.menuItemHeight)
@@ -125,7 +131,7 @@ FocusScope {
           x: Style.spacing.lg
           width: parent.width - Style.spacing.lg * 2
           height: 1
-          color: Util.alpha(Color.foreground, Motion.hairlineAlpha)
+          color: root.hairline
         }
 
         Row {
@@ -170,7 +176,7 @@ FocusScope {
           anchors.rightMargin: Style.spacing.xl
           anchors.verticalCenter: parent.verticalCenter
           text: row.modelData.shortcut || ""
-          color: row.isCurrent ? Color.menu.selectedText : Util.alpha(Color.menu.text, Motion.secondaryTextAlpha)
+          color: row.isCurrent ? root.selectedText : Util.alpha(root.textColor, Motion.secondaryTextAlpha)
           font.family: root.fontFamily
           font.pixelSize: Style.font.body
         }

@@ -64,6 +64,10 @@ PanelWindow {
   property bool popoutSwitchClosing: false
   property bool focusPrimed: false
   property string kind: "popover"
+  // Slide-in offset of the card (drawer-style surfaces: Notification Center
+  // comes in from the right edge, kind "toast" so it slides without scaling).
+  property real revealFromX: 0
+  property real revealFromY: 0
   // Card fill. Defaults to the theme's popup background at the glass alpha;
   // a plugin that renders its own material (e.g. an adaptive dark/light
   // sheet) overrides this instead of painting over the card.
@@ -410,8 +414,8 @@ PanelWindow {
     height: root.contentHeight
     kind: root.kind
     origin: root.revealOrigin
-    fromX: 0
-    fromY: 0
+    fromX: root.revealFromX
+    fromY: root.revealFromY
     open: root.open || root.popoutSwitching
     // Sliding along the bar from one open popup to the next swaps instantly.
     animated: !root.popoutSwitching && !root.popoutSwitchClosing
