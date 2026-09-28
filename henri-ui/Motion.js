@@ -80,6 +80,13 @@ var switcherDelay = 50
 var carryOffset = 24
 // Volume/brightness HUD: stays this long after the last key press (macOS).
 var hudHold = ms(1500)
+// Menu bar out of the way (bar-off flag, or a fullscreen window covers it):
+// pushing the pointer against its screen edge slides it in after this delay,
+// and it slides back this long after the pointer left it (macOS fullscreen
+// menu bar). edgeTrigger = how many px of the screen edge catch the pointer.
+var edgeRevealDelay = 250
+var edgeHideDelay = 350
+var edgeTrigger = 2
 // One full cycle of a "thinking" indicator (the three pulsing dots while an
 // agent composes an answer). Slower than any transition on purpose: it is a
 // heartbeat, not a reaction, and at transition speed it reads as impatience.
@@ -144,3 +151,33 @@ var contrastLarge = 3.0       // ≥ 18 pt or bold, and UI glyphs
 // ── Kinetic scrolling ──────────────────────────────────────────────────────
 var flickDeceleration = 1500
 var maximumFlickVelocity = 4000
+
+// ── Dock (henri.dock) ──────────────────────────────────────────────────────
+// The macOS Dock has its own physics (Spezifikation ~/Downloads/dock-spec.md,
+// guide values): kept here so the plugin owns no numbers and a retune lands
+// in one place. Springs are the spec's stiffness/damping/mass converted to
+// SwiftUI response/dampingRatio (mass 1): k/m = (2π/response)², c/m = 4πζ/response.
+var dock = {
+  magnify: spring(0.2, 1.19),      // 400 / 30 / 0.4 → very direct, overdamped, no ringing
+  gap: spring(0.363, 0.81),        // 300 / 28 / 1 → neighbours part for a dragged tile
+  land: spring(0.2, 1.0),          // dropped tile glides into its slot (≈ 200 ms)
+  bounceUp: ms(300), bounceDown: ms(300),
+  bounceHeight: 0.5,               // launch hop, × tile size
+  bounceUpCurve: [0.25, 0.46, 0.45, 0.94, 1, 1],    // ease-out up …
+  bounceDownCurve: [0.55, 0.085, 0.68, 0.53, 1, 1], // … gravity down; no squash
+  attentionHeight: 1.0,            // attention hop, × tile size
+  attentionUp: ms(350), attentionDown: ms(350), attentionPause: ms(300), attentionRepeats: 10,
+  labelIn: ms(80), labelOut: ms(100),
+  indicatorFade: ms(150),
+  badgeIn: spring(0.3, 0.75),      // badge pops in with a small overshoot
+  removeFade: ms(200), removeScale: 0.6,
+  removeDistance: 1.5,             // × tile size away from the dock → "Remove"
+  removeHold: 400,                 // ms held out there before "Remove" shows
+  longPress: 500,                  // ms → context menu
+  dragThreshold: 4,                // px before a press becomes a drag
+  genie: ms(500), scaleMinimize: ms(300), slowMotion: 10,
+  autoHideDuration: ms(350), autoHideDelay: 200, autoHideLeave: 300,
+  positionSwap: ms(250),           // out at the old edge, in at the new one
+  fan: ms(250), grid: ms(250), gridFromScale: 0.3,
+  pressedBrightness: 0.65
+}

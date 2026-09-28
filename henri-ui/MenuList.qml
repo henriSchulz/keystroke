@@ -15,6 +15,13 @@ import "Motion.js" as Motion
 //     // checked ones, the other labels stay aligned.
 //     onActivated: (index, entry) => { menu.open = false; run(entry) }
 //   }
+//
+// Submenus: an entry with `submenu: [ … ]` shows › on the right and never
+// activates; hovering it (after Motion.instant), → or ⏎ emit
+// submenuRequested(index, entry, row). The host places a second MenuList
+// beside `row`, sets `lockedIndex = index` while it is open (the parent row
+// stays highlighted, the pointer may leave), and clears it on close. A new
+// currentIndex on the parent means the pointer moved on — close the child.
 FocusScope {
   id: root
 
@@ -28,9 +35,23 @@ FocusScope {
   property color selectedBackground: Color.menu.selectedBackground
   property color selectedText: Color.menu.selectedText
   property color hairline: Util.alpha(Color.foreground, Motion.hairlineAlpha)
+  // Corner radius of the selected row. macOS draws a small one (5 pt);
+  // the default keeps henri-ui's row radius for existing callers.
+  property real itemRadius: Style.space(Motion.radiusRow)
   property bool flashing: false
+  // Row whose submenu is open: stays highlighted while the pointer is elsewhere.
+  property int lockedIndex: -1
 
   signal activated(int index, var entry)
+  signal submenuRequested(int index, var entry, Item row)
+  readonly property int highlightIndex: currentIndex >= 0 ? currentIndex : lockedIndex
+
+  function hasSubmenu(i) { var e = entry(i); return e !== null && !!e.submenu }
+  function requestSubmenu(i) {
+    if (!selectable(i) || !hasSubmenu(i)) return
+    currentIndex = i
+    submenuRequested(i, entry(i), rep.itemAt(i))
+  }
 
   readonly property bool hasCheckColumn: {
     for (var i = 0; i < model.length; i++) if (model[i] && model[i].checked !== undefined) return true
@@ -56,6 +77,7 @@ FocusScope {
   }
   function activate(i) {
     if (flashing || !selectable(i)) return
+    if (hasSubmenu(i)) { requestSubmenu(i); return }
     currentIndex = i
     flashing = true
     flash.restart()
@@ -82,18 +104,26 @@ FocusScope {
     if (e.key === Qt.Key_Home) { currentIndex = -1; move(1); e.accepted = true }
     else if (e.key === Qt.Key_End) { currentIndex = 0; move(-1); e.accepted = true }
     else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) { activate(currentIndex); e.accepted = true }
+    else if (e.key === Qt.Key_Right && hasSubmenu(currentIndex)) { requestSubmenu(currentIndex); e.accepted = true }
+  }
+
+  Timer {
+    id: submenuHover
+    interval: Motion.instant
+    onTriggered: if (root.currentIndex >= 0 && root.hasSubmenu(root.currentIndex) && root.lockedIndex !== root.currentIndex) root.requestSubmenu(root.currentIndex)
   }
 
   HoverHandler {
     id: listHover
-    onHoveredChanged: if (!hovered && !root.flashing) root.currentIndex = -1
+    onHoveredChanged: if (!hovered && !root.flashing && root.lockedIndex < 0) root.currentIndex = -1
   }
 
   Highlight {
     id: hl
     glide: false
+    radius: root.itemRadius
     color: root.selectedBackground           // theme-authored (cupertino: blue)
-    target: root.currentIndex >= 0 ? rep.itemAt(root.currentIndex) : null
+    target: root.highlightIndex >= 0 ? rep.itemAt(root.highlightIndex) : null
   }
 
   Column {
@@ -115,7 +145,8 @@ FocusScope {
         required property int index
         required property var modelData
         readonly property bool isSeparator: modelData.separator === true
-        readonly property bool isCurrent: root.currentIndex === index && !hl.suppressed
+        readonly property bool isCurrent: root.highlightIndex === index && !hl.suppressed
+        readonly property bool hasSubmenu: !!modelData.submenu
         readonly property color textColor: isCurrent ? root.selectedText
           : modelData.danger ? Color.urgent : root.textColor
 
@@ -171,11 +202,11 @@ FocusScope {
 
         Text {
           id: shortcutLabel
-          visible: !row.isSeparator && !!row.modelData.shortcut
+          visible: !row.isSeparator && (!!row.modelData.shortcut || row.hasSubmenu)
           anchors.right: parent.right
           anchors.rightMargin: Style.spacing.xl
           anchors.verticalCenter: parent.verticalCenter
-          text: row.modelData.shortcut || ""
+          text: row.hasSubmenu ? "\u203a" : (row.modelData.shortcut || "")
           color: row.isCurrent ? root.selectedText : Util.alpha(root.textColor, Motion.secondaryTextAlpha)
           font.family: root.fontFamily
           font.pixelSize: Style.font.body
@@ -183,7 +214,10 @@ FocusScope {
 
         HoverHandler {
           enabled: !row.isSeparator && !root.flashing
-          onHoveredChanged: if (hovered && root.selectable(row.index)) root.currentIndex = row.index
+          onHoveredChanged: if (hovered && root.selectable(row.index)) {
+            root.currentIndex = row.index
+            if (row.hasSubmenu) submenuHover.restart()
+          }
         }
         TapHandler {
           enabled: !row.isSeparator

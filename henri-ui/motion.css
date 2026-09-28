@@ -13,6 +13,9 @@
   --dur-slower: 520ms;
   --dur-overview: 250ms;      /* Mission Control open, measured on macOS */
   --dur-overview-exit: 165ms; /* ...and close (ease-out) */
+  --edge-reveal-delay: 250ms; /* hidden menu bar: pointer at the edge → slides in */
+  --edge-hide-delay: 350ms;   /* ...and back out after the pointer left it */
+  --edge-trigger: 2px;        /* px of screen edge that catch the pointer */
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.15, 1);
@@ -52,6 +55,39 @@
   --pressed-alpha: 14%;
   --hairline: 1px solid color-mix(in srgb, var(--fg, currentColor) 10%, transparent);
   --shadow-popover: 0 8px 24px rgb(0 0 0 / 0.2), 0 0 0 0.5px rgb(0 0 0 / 0.12);
+  /* ---- Dock (henri.dock) — mirrors Motion.js `dock`; spec guide values.
+   * Springs: 400/30/0.4 (magnify), 300/28/1 (gap), 200 ms landing. */
+  --dock-magnify-dur: 200ms;       /* response of the magnify spring (overdamped, no ringing) */
+  --dock-gap-dur: 363ms;
+  --dock-land-dur: 200ms;
+  --dock-bounce-up: 300ms;
+  --dock-bounce-down: 300ms;
+  --dock-bounce-height: 0.5;       /* × tile size */
+  --dock-bounce-up-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dock-bounce-down-ease: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --dock-attention-height: 1;
+  --dock-attention-up: 350ms;
+  --dock-attention-down: 350ms;
+  --dock-attention-pause: 300ms;
+  --dock-label-in: 80ms;
+  --dock-label-out: 100ms;
+  --dock-indicator-fade: 150ms;
+  --dock-remove-fade: 200ms;
+  --dock-remove-scale: 0.6;
+  --dock-remove-hold: 400ms;
+  --dock-long-press: 500ms;
+  --dock-drag-threshold: 4px;
+  --dock-genie: 500ms;
+  --dock-scale-minimize: 300ms;
+  --dock-autohide: 350ms;
+  --dock-autohide-delay: 200ms;
+  --dock-autohide-leave: 300ms;
+  --dock-position-swap: 250ms;
+  --dock-fan: 250ms;
+  --dock-grid: 250ms;
+  --dock-grid-from-scale: 0.3;
+  --dock-pressed-brightness: 0.65;
+
 }
 
 /* Interactive controls: hover in fast, out slower, press springs back. */
