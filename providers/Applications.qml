@@ -9,6 +9,10 @@ Item {
   property var host: null
   readonly property var library: host ? host.appLibrary : null
   property var searchCache: ({})
+  // Apps that win over others matching the same query. System Settings is
+  // one of many Settings-tagged entries (Print Settings, Voxtype, Fcitx…),
+  // and typing "settings" should land on it first.
+  readonly property var preferred: ({ "omarchy-settings": 30 })
 
   onLibraryChanged: {
     root.searchCache = ({})
@@ -70,7 +74,7 @@ Item {
       if (!ctx.query) { rows.push(root.rowFor(entry, 1, i)); continue }
       var s = Match.match(ctx.query, root.library.entryName(entry), "", "", root.searchText(entry))
       // At the root a confident app match outranks Omarchy entries with the same name.
-      if (s) rows.push(root.rowFor(entry, ctx.scope ? s : s + (s >= 78 ? 45 : 8), i))
+      if (s) rows.push(root.rowFor(entry, (ctx.scope ? s : s + (s >= 78 ? 45 : 8)) + (root.preferred[String(entry.id)] || 0), i))
     }
     return rows
   }
