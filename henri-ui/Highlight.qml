@@ -31,10 +31,12 @@ Rectangle {
     NumberAnimation { duration: Motion.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut }
   }
 
-  SpringValue { id: sx; epsilon: 0.3; to: root.target ? root.target.x + root.inset : root.x }
-  SpringValue { id: sy; epsilon: 0.3; to: root.target ? root.target.y + root.inset : root.y }
-  SpringValue { id: sw; epsilon: 0.3; to: root.target ? root.target.width - root.inset * 2 : root.width }
-  SpringValue { id: sh; epsilon: 0.3; to: root.target ? root.target.height - root.inset * 2 : root.height }
+  // No target: hold where it is (own value, not root.x — under Reduce Motion
+  // the spring snaps inside the change handler, and root.x would loop back).
+  SpringValue { id: sx; epsilon: 0.3; to: root.target ? root.target.x + root.inset : sx.value }
+  SpringValue { id: sy; epsilon: 0.3; to: root.target ? root.target.y + root.inset : sy.value }
+  SpringValue { id: sw; epsilon: 0.3; to: root.target ? root.target.width - root.inset * 2 : sw.value }
+  SpringValue { id: sh; epsilon: 0.3; to: root.target ? root.target.height - root.inset * 2 : sh.value }
 
   // Appearing from nothing: start at the target instead of flying in from 0,0.
   property Item _previous: null

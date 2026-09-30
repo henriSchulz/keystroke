@@ -462,7 +462,10 @@ Item {
   // change at once. Selection never glides: the highlight jumps like NSMenu.
   readonly property var motion: MotionTiers.profile(paletteSettings.animations)
   readonly property bool animated: motion.level > 0
-  readonly property bool windowSlides: paletteSettings.windowTransition === "slide"
+  // Reduce Motion (henri-ui Motion.reduceMotion, from System Settings): the
+  // window never slides and a level never shifts sideways — only the fades
+  // stay; the card scale tokens are 1 there anyway.
+  readonly property bool windowSlides: paletteSettings.windowTransition === "slide" && !Motion.reduceMotion
   // The window transition is chosen apart from the tier: Instant keeps the
   // rest of the palette animated while the window itself appears at once.
   // Launcher = full-screen surface: fade + scale from popoverFromScale on the
@@ -530,7 +533,7 @@ Item {
   function slideLevel(direction) {
     if (!root.animated || !root.opened) return
     levelAnim.stop()
-    levelShift.x = MotionTiers.levelOffset(direction, Style.space(MotionTiers.LEVEL_SLIDE_PX))
+    levelShift.x = Motion.offset(MotionTiers.levelOffset(direction, Style.space(MotionTiers.LEVEL_SLIDE_PX)))
     root.levelOpacity = 0
     levelAnim.duration = root.levelDuration
     levelAnim.restart()
@@ -1314,7 +1317,7 @@ Item {
             anchors.centerIn: parent
             width: Style.space(10); height: width; radius: width / 2
             color: voice.phase === "listening" ? root.accent : Util.alpha(root.accent, 0.55)
-            scale: voice.phase === "listening" ? 1 + 0.6 * voice.level : 1
+            scale: voice.phase === "listening" && !Motion.reduceMotion ? 1 + 0.6 * voice.level : 1
             Behavior on scale { NumberAnimation { duration: Motion.instant; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easeOut } }
           }
         }
@@ -1343,7 +1346,8 @@ Item {
           visible: sweep.running
           property real span: 0
           function play(prefixLength) {
-            if (!root.animated || !search.text) return
+            // A sweep is movement: Reduce Motion leaves it out.
+            if (!root.animated || Motion.reduceMotion || !search.text) return
             span = Math.max(Style.space(24), search.positionToRectangle(Math.min(prefixLength, search.text.length)).x + Style.space(6))
             sweep.restart()
           }

@@ -13,6 +13,15 @@ var speed = 1.0
 // Comes from Prefs.js, written by System Settings (Accessibility › Display ›
 // Reduce motion) — switch it there, not here.
 var reduceMotion = Prefs.reduceMotion
+// Reduce-motion helpers — wrap every movement token with these instead of
+// writing `Motion.reduceMotion ? … : …` by hand. Fades (opacity, color) stay
+// as they are; only position, scale, size glides and springs go.
+//   move(Motion.base)         duration of a position/scale/size animation → 0 when reduced
+//   fromScale(Motion.menuFromScale)  a scale a surface starts/ends at → 1 when reduced
+//   offset(Motion.toastOffset)       a slide/drift/parallax distance → 0 when reduced
+function move(d) { return reduceMotion ? 0 : d }
+function fromScale(s) { return reduceMotion ? 1 : s }
+function offset(px) { return reduceMotion ? 0 : px }
 
 function ms(v) { return Math.round(v * speed) }
 
@@ -52,21 +61,23 @@ var gentle = spring(0.36, 1.0)    // big surfaces: panels, overview, sheets
 var bouncy = spring(0.45, 0.75)   // rare, playful only
 
 // ── Choreography ───────────────────────────────────────────────────────────
-var pressScale = 0.97
+// Every scale/offset token below is movement: with reduceMotion it is the
+// identity (scale 1, offset 0), so plugins that use the tokens follow for free.
+var pressScale = fromScale(0.97)
 // A dragged item (reorderable tile, Spaces thumbnail) lifts to this scale while
 // held and settles back on drop with the snappy spring.
-var liftScale = 1.05
-var menuFromScale = 0.96
-var popoverFromScale = 0.95
-var exitToScale = 0.98
+var liftScale = fromScale(1.05)
+var menuFromScale = fromScale(0.96)
+var popoverFromScale = fromScale(0.95)
+var exitToScale = fromScale(0.98)
 // Spotlight/launcher card: asked for dozens of times a day, so it enters from
 // almost full size (0.98 → 1, `fast`, easeOut) and leaves with a plain fade
 // (exit(fast), easeExit) — spotlight-design-spec §10.
-var launcherFromScale = 0.98
-var iconFromScale = 0.8     // icon/glyph/dot crossfade: scales up from this
-var menuOffsetY = -4          // menus drop 4 px out of their anchor
-var toastOffset = 16          // toasts slide in from the screen edge
-var pageParallax = 0.3        // outgoing page moves 30 % while the new one slides in
+var launcherFromScale = fromScale(0.98)
+var iconFromScale = fromScale(0.8)    // icon/glyph/dot crossfade: scales up from this
+var menuOffsetY = offset(-4)         // menus drop 4 px out of their anchor
+var toastOffset = offset(16)         // toasts slide in from the screen edge
+var pageParallax = offset(0.3)       // outgoing page moves 30 % while the new one slides in
 var flashDuration = ms(70)    // menu item blink after a click (macOS)
 // Reveal waits for its window's first frame before animating; give up after this.
 var firstFrameTimeout = 400
@@ -80,7 +91,7 @@ var settleDelay = ms(120)
 var switcherDelay = 50
 // On commit the strip drifts this far in the direction the workspaces slide,
 // so the overlay and the desktop read as one movement.
-var carryOffset = 24
+var carryOffset = offset(24)
 // Volume/brightness HUD: stays this long after the last key press (macOS).
 var hudHold = ms(1500)
 // Menu bar out of the way (bar-off flag, or a fullscreen window covers it):
@@ -108,7 +119,7 @@ var repeatInterval = 80
 var echoTimeout = 1500
 // Rejected input (wrong password): one horizontal shake, 3 swings — the only
 // allowed wobble, like the macOS login field.
-var shakeDistance = 6
+var shakeDistance = offset(6)
 var shakeDuration = ms(300)
 
 var staggerStep = 15
@@ -177,15 +188,15 @@ var dock = {
   gap: spring(0.363, 0.81),        // 300 / 28 / 1 → neighbours part for a dragged tile
   land: spring(0.2, 1.0),          // dropped tile glides into its slot (≈ 200 ms)
   bounceUp: ms(300), bounceDown: ms(300),
-  bounceHeight: 0.5,               // launch hop, × tile size
+  bounceHeight: offset(0.5),               // launch hop, × tile size
   bounceUpCurve: [0.25, 0.46, 0.45, 0.94, 1, 1],    // ease-out up …
   bounceDownCurve: [0.55, 0.085, 0.68, 0.53, 1, 1], // … gravity down; no squash
-  attentionHeight: 1.0,            // attention hop, × tile size
+  attentionHeight: offset(1.0),            // attention hop, × tile size
   attentionUp: ms(350), attentionDown: ms(350), attentionPause: ms(300), attentionRepeats: 10,
   labelIn: ms(80), labelOut: ms(100),
   indicatorFade: ms(150),
   badgeIn: spring(0.3, 0.75),      // badge pops in with a small overshoot
-  removeFade: ms(200), removeScale: 0.6,
+  removeFade: ms(200), removeScale: fromScale(0.6),
   removeDistance: 1.5,             // × tile size away from the dock → "Remove"
   removeHold: 400,                 // ms held out there before "Remove" shows
   longPress: 500,                  // ms → context menu
@@ -193,6 +204,6 @@ var dock = {
   genie: ms(500), scaleMinimize: ms(300), slowMotion: 10,
   autoHideDuration: ms(350), autoHideDelay: 200, autoHideLeave: 300,
   positionSwap: ms(250),           // out at the old edge, in at the new one
-  fan: ms(250), grid: ms(250), gridFromScale: 0.3,
+  fan: ms(250), grid: ms(250), gridFromScale: fromScale(0.3),
   pressedBrightness: 0.65
 }

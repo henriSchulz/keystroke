@@ -55,7 +55,11 @@ Item {
 
         // Distance from the travelling sweep, 0 at its centre.
         readonly property real reach: Math.abs(index / Math.max(1, root.barCount - 1) - root.sweep)
-        readonly property real glow: Math.max(0, 1 - reach / root.sweepReach)
+        // Reduce Motion: nothing travels -- the whole row breathes in place
+        // with the same `sweep` clock instead.
+        readonly property real glow: Motion.reduceMotion
+          ? 0.5 - 0.5 * Math.cos(2 * Math.PI * root.sweep)
+          : Math.max(0, 1 - reach / root.sweepReach)
 
         width: root.barWidth
         height: root.height

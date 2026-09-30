@@ -22,18 +22,26 @@ FrameAnimation {
   readonly property real dampingRatio: preset.dampingRatio
   // Rest threshold in the value's own unit: ~0.5 for pixels, ~0.001 for scale/opacity.
   property real epsilon: 0.001
+  // Reduce Motion: a spring that moves something (position, scale, size) snaps
+  // to its target. Set movement: false for a spring that only fades (opacity,
+  // a blend factor) — that one keeps animating, like every crossfade.
+  property bool movement: true
+  // Where Reduce Motion comes from. Only override it for a plugin that has its
+  // own stricter switch on top of the system one (henri.dock "Reduced").
+  property bool reduced: Motion.reduceMotion
+  readonly property bool _snaps: movement && reduced
 
   // Jump to v without animating; keeps the `to` binding intact, so the spring
   // then runs from v to the current target (e.g. start an open from 0.96).
   function snap(v) {
     velocity = 0
-    value = Motion.reduceMotion ? to : v
+    value = _snaps ? to : v
     running = value !== to
   }
 
   running: false
   onToChanged: {
-    if (Motion.reduceMotion) { velocity = 0; value = to; running = false; return }
+    if (_snaps) { velocity = 0; value = to; running = false; return }
     if (value !== to) running = true
   }
   Component.onCompleted: value = to
