@@ -1,7 +1,10 @@
 /* Henri UI tokens for GTK4/libadwaita — single source of truth.
  * Apps load this at runtime from ~/.local/share/henri-ui/gtk.css
  * (gtk::CssProvider, priority APPLICATION) and watch it with a FileMonitor,
- * so edits here reach every app. Never copy it into an app. */
+ * so edits here reach every app. Never copy it into an app.
+ * Reduce motion / reduce transparency from System Settings (Prefs.js) are
+ * not followed here: GTK itself follows gtk-enable-animations, which System
+ * Settings switches through GNOME's enable-animations. */
 @import url("gtk-tokens.css");
 
 button { min-height: 28px; }

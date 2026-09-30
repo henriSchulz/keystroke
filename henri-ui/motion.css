@@ -4,7 +4,11 @@
  * so edits here reach every app. Use the variables; never hand-pick
  * durations or curves. Values mirror SKILL.md.
  * Spring curves are exact solutions of a mass-1 spring (see SKILL.md table),
- * sampled into linear(); pair each with its -dur. */
+ * sampled into linear(); pair each with its -dur.
+ * Reduce motion / reduce transparency (System Settings, henri-ui Prefs.js)
+ * are NOT followed here: CSS only sees the browser's prefers-reduced-motion
+ * (below), which browsers usually derive from GNOME/GTK enable-animations —
+ * and that one System Settings does switch. */
 :root {
   --dur-instant: 90ms;
   --dur-fast: 160ms;

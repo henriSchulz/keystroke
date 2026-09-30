@@ -1,4 +1,5 @@
 .pragma library
+.import "Prefs.js" as Prefs
 // Henri UI tokens — SINGLE SOURCE OF TRUTH for every QML plugin.
 // Never copy this file into a plugin; import it by absolute URL:
 //   import "file:///home/henri/.local/share/henri-ui/Motion.js" as Motion
@@ -9,7 +10,9 @@
 // speed scales every duration and spring (1.2 = everything 20 % slower).
 var speed = 1.0
 // reduceMotion: components keep only crossfades (no scale, slide or spring).
-var reduceMotion = false
+// Comes from Prefs.js, written by System Settings (Accessibility › Display ›
+// Reduce motion) — switch it there, not here.
+var reduceMotion = Prefs.reduceMotion
 
 function ms(v) { return Math.round(v * speed) }
 
@@ -128,7 +131,8 @@ var secondaryTextAlpha = 0.65
 // Pair with a Hyprland `layer_rule` blur on the surface's namespace (see
 // looknfeel.lua's rule for HUi.PopupPanel's shared namespace) — without the
 // compositor blur behind it, low alpha alone just looks washed out, not glass.
-var glass = true
+// Off when System Settings › Accessibility › Reduce transparency is on (Prefs.js).
+var glass = !Prefs.reduceTransparency
 var glassTileAlpha = 0.42
 var glassTileHoverAlpha = 0.55
 var glassPanelAlpha = 0.35
