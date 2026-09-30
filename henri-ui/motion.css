@@ -16,6 +16,10 @@
   --edge-reveal-delay: 250ms; /* hidden menu bar: pointer at the edge → slides in */
   --edge-hide-delay: 350ms;   /* ...and back out after the pointer left it */
   --edge-trigger: 2px;        /* px of screen edge that catch the pointer */
+  --loading-delay: 300ms;     /* waiting: show nothing before this, then fade a spinner in */
+  --repeat-delay: 400ms;      /* press-and-hold (stepper): first repeat... */
+  --repeat-interval: 80ms;    /* ...then one step every interval */
+  --echo-timeout: 1500ms;     /* control keeps its own value until the system echoes it */
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.15, 1);

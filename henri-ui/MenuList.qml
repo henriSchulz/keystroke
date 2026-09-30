@@ -38,6 +38,9 @@ FocusScope {
   // Corner radius of the selected row. macOS draws a small one (5 pt);
   // the default keeps henri-ui's row radius for existing callers.
   property real itemRadius: Style.space(Motion.radiusRow)
+  // Hosts with their own text size setting (an app's "Text size") pass it
+  // here: row height and every label grow with it. 1 = the theme's size.
+  property real textScale: 1
   property bool flashing: false
   // Row whose submenu is open: stays highlighted while the pointer is elsewhere.
   property int lockedIndex: -1
@@ -151,7 +154,7 @@ FocusScope {
           : modelData.danger ? Color.urgent : root.textColor
 
         width: col.width
-        height: isSeparator ? Style.space(9) : Style.space(Motion.menuItemHeight)
+        height: isSeparator ? Style.space(9) : Math.round(Style.space(Motion.menuItemHeight) * root.textScale)
         opacity: modelData.enabled === false ? Motion.disabledOpacity : 1
         implicitWidth: isSeparator ? 0 : content.implicitWidth + Style.spacing.xl * 2
           + (shortcutLabel.visible ? shortcutLabel.implicitWidth + Style.space(24) : 0)
@@ -179,7 +182,7 @@ FocusScope {
             text: row.modelData.checked === true ? "✓" : ""
             color: row.textColor
             font.family: root.fontFamily
-            font.pixelSize: Style.font.body
+            font.pixelSize: Math.round(Style.font.body * root.textScale)
             font.weight: Font.DemiBold
             anchors.verticalCenter: parent.verticalCenter
           }
@@ -188,14 +191,14 @@ FocusScope {
             text: row.modelData.icon || ""
             color: row.textColor
             font.family: Style.font.family
-            font.pixelSize: Style.font.icon
+            font.pixelSize: Math.round(Style.font.icon * root.textScale)
             anchors.verticalCenter: parent.verticalCenter
           }
           Text {
             text: row.modelData.text || ""
             color: row.textColor
             font.family: root.fontFamily
-            font.pixelSize: Style.font.body
+            font.pixelSize: Math.round(Style.font.body * root.textScale)
             anchors.verticalCenter: parent.verticalCenter
           }
         }
@@ -209,7 +212,7 @@ FocusScope {
           text: row.hasSubmenu ? "\u203a" : (row.modelData.shortcut || "")
           color: row.isCurrent ? root.selectedText : Util.alpha(root.textColor, Motion.secondaryTextAlpha)
           font.family: root.fontFamily
-          font.pixelSize: Style.font.body
+          font.pixelSize: Math.round(Style.font.body * root.textScale)
         }
 
         HoverHandler {

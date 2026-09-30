@@ -92,6 +92,17 @@ var edgeTrigger = 2
 // heartbeat, not a reaction, and at transition speed it reads as impatience.
 var thinkingCycle = ms(1200)
 var tooltipGrace = 1000       // follow-up tooltips show instantly within this window
+// Waiting (§3b.8): nothing is shown for the first loadingDelay ms, then a
+// spinner fades in — a fast answer never flashes one. Like tooltipDelay a
+// perception threshold, not an animation, so `speed` does not scale it.
+var loadingDelay = 300
+// Press-and-hold repeat (stepper arrows, like macOS key repeat): the first
+// repeat after repeatDelay, then one every repeatInterval. Not scaled either.
+var repeatDelay = 400
+var repeatInterval = 80
+// A control that wrote a value (slider, stepper) shows its own value until the
+// system echoes it back — at most this long, then it follows the system again.
+var echoTimeout = 1500
 // Rejected input (wrong password): one horizontal shake, 3 swings — the only
 // allowed wobble, like the macOS login field.
 var shakeDistance = 6
