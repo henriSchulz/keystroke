@@ -6,3 +6,6 @@
 // from here (the Settings backend, henri-ui-sync for vendored copies).
 var reduceMotion = false
 var reduceTransparency = false
+// Control Center › Experiments › No effects (henri-render-power): the
+// compositor blur is off, so glass would only look washed out.
+var noEffects = false

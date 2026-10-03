@@ -142,8 +142,9 @@ var secondaryTextAlpha = 0.65
 // Pair with a Hyprland `layer_rule` blur on the surface's namespace (see
 // looknfeel.lua's rule for HUi.PopupPanel's shared namespace) — without the
 // compositor blur behind it, low alpha alone just looks washed out, not glass.
-// Off when System Settings › Accessibility › Reduce transparency is on (Prefs.js).
-var glass = !Prefs.reduceTransparency
+// Off when System Settings › Accessibility › Reduce transparency is on, and
+// while Control Center › Experiments › No effects has the blur off (Prefs.js).
+var glass = !Prefs.reduceTransparency && !Prefs.noEffects
 var glassTileAlpha = 0.42
 var glassTileHoverAlpha = 0.55
 var glassPanelAlpha = 0.35
